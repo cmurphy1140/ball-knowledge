@@ -1,0 +1,1483 @@
+<title>Ball Knowledge</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800;900&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: phone-first single column that opens into a two-column site at 56rem. The field is both the hero and the play
+   surface. Color follows the broadcast: blue is the line of scrimmage (where you are, and the one UI accent), yellow is
+   the line to gain (the next rank, clues, the big number). The turf keeps one look in both themes, the way a field does. */
+:root {
+  color-scheme: dark;
+  --bg: #14171C; --surface: #1B2027; --raised: #232A33; --hover: rgba(255,255,255,0.06);
+  --line: #2C343F; --line-2: #414B59;
+  --ink: #E8EAEE; --ink-2: #AAB1BC; --ink-3: #808896;
+  --los: #6FA8FF; --los-2: #93BEFF; --on-los: #0C1420; --los-tint: rgba(111,168,255,0.16);
+  --gain-ink: #FFD84A; --good: #6FCF8E; --bad: #F2857A;
+  --turf: #1D4634; --turf-2: #21503B; --chalk: #F3F5EF; --f-los: #5E9DFF; --f-gain: #FFD84A; --f-bad: #FF9D92; --f-well: rgba(8,20,14,0.38);
+  --display: "Big Shoulders Display", "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Impact, sans-serif;
+  --body: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --gut: 16px;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #F3F4F0; --surface: #FFFFFF; --raised: #F7F8F5; --hover: rgba(27,34,43,0.05);
+    --line: #DFE2DC; --line-2: #C1C6BD;
+    --ink: #1B222B; --ink-2: #4E5865; --ink-3: #636C79;
+    --los: #1F5FBF; --los-2: #184C9B; --on-los: #FFFFFF; --los-tint: rgba(31,95,191,0.12);
+    --gain-ink: #8A6500; --good: #2A7A4B; --bad: #B8443B;
+  }
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #F3F4F0; --surface: #FFFFFF; --raised: #F7F8F5; --hover: rgba(27,34,43,0.05);
+  --line: #DFE2DC; --line-2: #C1C6BD;
+  --ink: #1B222B; --ink-2: #4E5865; --ink-3: #636C79;
+  --los: #1F5FBF; --los-2: #184C9B; --on-los: #FFFFFF; --los-tint: rgba(31,95,191,0.12);
+  --gain-ink: #8A6500; --good: #2A7A4B; --bad: #B8443B;
+}
+@media (min-width: 48rem) { :root { --gut: 32px; } }
+
+*, *::before, *::after { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 16px/1.55 var(--body); -webkit-text-size-adjust: 100%; -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 68rem; margin-inline: auto; padding-inline: var(--gut); padding-block: 0 56px; }
+h1, h2, h3, p, ul, ol, fieldset, pre, figure { margin: 0; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--los); outline-offset: 2px; }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.eyebrow { font: 600 11.5px/1.3 var(--body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-2); }
+.num { font-variant-numeric: tabular-nums; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+/* site header */
+.site { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 16px; padding-top: 8px; border-bottom: 1px solid var(--line); }
+.wordmark { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 0; border: 0; background: none; color: var(--ink); font: 800 21px/1 var(--display); letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; }
+.wordmark svg { width: 36px; height: 20px; flex: none; }
+.wm-o { fill: none; stroke: var(--ink); stroke-width: 2.4; }
+.wm-x { fill: none; stroke: var(--los); stroke-width: 2.6; stroke-linecap: round; }
+/* pages: the current one sits on a blue line */
+.nav { display: flex; gap: 2px; margin-inline: -12px; }
+.nav button { position: relative; min-height: 44px; padding: 6px 12px; border: 0; background: none; color: var(--ink-2); font: 600 15px var(--body); cursor: pointer; }
+.nav button:hover { color: var(--ink); }
+.nav button[aria-current="page"] { color: var(--ink); }
+.nav button[aria-current="page"]::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: -1px; height: 3px; background: var(--los); border-radius: 2px 2px 0 0; }
+.site[data-focus="1"] { padding-bottom: 6px; }
+.site[data-focus="1"] .nav { display: none; }
+
+main { display: flex; flex-direction: column; gap: 40px; padding-top: 32px; }
+h2 { font: 800 30px/1 var(--display); letter-spacing: 0.015em; text-transform: uppercase; text-wrap: balance; }
+h3 { font: 800 24px/1.05 var(--display); letter-spacing: 0.015em; text-transform: uppercase; text-wrap: balance; }
+
+/* buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 8px 16px; border: 1px solid var(--line-2); border-radius: 6px; background: transparent; color: var(--ink); font: 600 15px/1.2 var(--body); cursor: pointer; transition: background-color .12s, border-color .12s; }
+.btn:hover { background: var(--hover); border-color: var(--ink-3); }
+.btn.primary { background: var(--los); border-color: var(--los); color: var(--on-los); }
+.btn.primary:hover { background: var(--los-2); border-color: var(--los-2); }
+.btn.solid { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.btn.solid:hover { background: var(--ink-2); border-color: var(--ink-2); }
+.btn.kick { min-height: 50px; padding: 8px 26px; font: 800 21px/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; }
+.linkbtn { align-self: flex-start; min-height: 44px; padding: 0; border: 0; background: none; color: var(--ink-2); font: 500 15px var(--body); cursor: pointer; }
+.linkbtn:hover { color: var(--ink); }
+
+/* today */
+.hero { display: grid; gap: 28px; }
+.hero-copy { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+h1 { font: 900 clamp(54px, 16.5vw, 104px)/0.84 var(--display); letter-spacing: 0.005em; text-transform: uppercase; }
+h1 em { font-style: normal; color: var(--los); }
+.lede { max-width: 33ch; font-size: 18px; line-height: 1.5; color: var(--ink-2); }
+.also { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+@media (min-width: 56rem) {
+  .hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "copy card" "also card"; gap: 40px 56px; align-items: start; }
+  .hero-copy { grid-area: copy; padding-top: 12px; } .daily { grid-area: card; } .also { grid-area: also; }
+  h1 { font-size: min(9.4vw, 104px); }
+}
+.rows { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
+.rowlink { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 14px; width: 100%; padding: 14px 4px; border: 0; border-bottom: 1px solid var(--line); background: none; color: var(--ink); text-align: left; cursor: pointer; }
+.rowlink:hover { background: var(--hover); }
+.rowlink .t { font: 800 22px/1.05 var(--display); letter-spacing: 0.02em; text-transform: uppercase; }
+.rowlink .d { grid-column: 1; font-size: 14.5px; line-height: 1.4; color: var(--ink-2); }
+.rowlink .go { grid-column: 2; grid-row: 1 / span 2; font: 700 22px/1 var(--display); color: var(--ink-3); }
+.rowlink[data-s="won"] .go { color: var(--good); } .rowlink[data-s="lost"] .go { color: var(--bad); }
+.page { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.page.narrow { max-width: 36rem; }
+.page > p { color: var(--ink-2); max-width: 62ch; }
+.pinned { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 4; margin-inline: calc(var(--gut) * -1); padding: 10px var(--gut); background: var(--bg); border-bottom: 1px solid var(--line); }
+.pinned .ticket { align-items: center; }
+.pinned .ticket > div { flex: 1; min-width: 0; }
+
+.card { display: flex; flex-direction: column; gap: 14px; padding: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+.card p { color: var(--ink-2); }
+.daily { padding: 0; gap: 0; overflow: hidden; }
+.daily .field { border: 0; border-bottom: 1px solid var(--line); border-radius: 0; }
+.daily-body { display: flex; flex-direction: column; gap: 10px; padding: 18px 20px 20px; }
+.cta { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-top: 6px; }
+.cta .meta { font-size: 14px; color: var(--ink-2); }
+
+/* picker */
+form { display: flex; flex-direction: column; gap: 16px; }
+.ticket { display: flex; align-items: stretch; gap: 12px; padding: 12px 14px; background: var(--raised); border: 1px solid var(--line); border-radius: 8px; }
+.stripe { display: flex; flex-direction: column; flex: none; width: 10px; border-radius: 2px; overflow: hidden; border: 1px solid var(--line-2); }
+.stripe i { flex: 1; }
+.t-name { font: 800 26px/1 var(--display); letter-spacing: 0.015em; text-transform: uppercase; overflow-wrap: anywhere; }
+.t-sub { margin-top: 4px; font-size: 14px; color: var(--ink-2); }
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: 12px; }
+.field-l { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+select, input[type="text"] { width: 100%; min-height: 48px; padding: 8px 14px; background: var(--surface); color: var(--ink); border: 1px solid var(--line-2); border-radius: 8px; font-size: 17px; }
+.card select { background: var(--raised); }
+input[type="text"]::placeholder { color: var(--ink-3); }
+input[type="text"]:focus-visible, select:focus-visible { outline-offset: 0; border-color: var(--los); }
+fieldset { border: 0; padding: 0; min-width: 0; }
+legend { padding: 0; margin-bottom: 6px; }
+.seg { display: flex; flex-wrap: wrap; gap: 8px; }
+.seg label { position: relative; display: flex; }
+.seg input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.seg span { display: flex; align-items: center; min-height: 44px; padding: 8px 14px; border: 1px solid var(--line-2); border-radius: 6px; font-size: 15px; font-weight: 500; color: var(--ink-2); }
+.seg input:checked + span { border-color: var(--los); color: var(--ink); background: var(--los-tint); }
+.seg input:focus-visible + span { outline: 2px solid var(--los); outline-offset: 2px; }
+.check { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 15px; }
+.check input { width: 20px; height: 20px; accent-color: var(--los); }
+
+/* board */
+.boards { display: grid; gap: 4px 48px; }
+.board { display: grid; grid-template-columns: 2.5rem repeat(13, minmax(0, 1fr)); gap: 2px; align-items: center; }
+.board .yr { text-align: center; font: 700 13px/1 var(--display); letter-spacing: 0.04em; color: var(--ink-2); }
+.board .dv { grid-column: 1 / -1; margin-top: 10px; }
+.board .tm { font: 700 14px/1 var(--display); letter-spacing: 0.05em; color: var(--ink-2); }
+.cell { position: relative; display: block; width: 100%; aspect-ratio: 1; min-height: 18px; padding: 0; border: 1px solid var(--line); border-radius: 3px; background: var(--surface); cursor: pointer; overflow: hidden; }
+.cell i { position: absolute; inset: 0; background: var(--good); opacity: 0; }
+.cell[data-l="1"] i { opacity: 0.28; } .cell[data-l="2"] i { opacity: 0.52; } .cell[data-l="3"] i { opacity: 0.76; } .cell[data-l="4"] i { opacity: 1; }
+.cell[data-l="1"], .cell[data-l="2"], .cell[data-l="3"], .cell[data-l="4"] { border-color: var(--good); }
+.cell:hover { border-color: var(--ink-3); }
+.cell[aria-pressed="true"] { outline: 2px solid var(--los); outline-offset: 1px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; font-size: 14px; color: var(--ink-3); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend .cell { width: 16px; min-height: 16px; cursor: default; }
+.rules { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 14px; color: var(--ink-2); font-size: 15px; }
+.rules li { position: relative; padding-left: 22px; }
+.rules li::before { content: ""; position: absolute; left: 2px; top: 0.5em; width: 9px; height: 9px; background: var(--gain-ink); transform: rotate(45deg); border-radius: 1px; }
+.rules b { color: var(--ink); font-weight: 600; }
+@media (min-width: 56rem) { .boards { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.note { padding-top: 16px; border-top: 1px solid var(--line); font-size: 14px; line-height: 1.5; color: var(--ink-3); }
+
+/* the field */
+.field { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--turf); line-height: 0; }
+.field svg { display: block; width: 100%; height: auto; -webkit-tap-highlight-color: transparent; }
+.f-turf { fill: var(--turf); } .f-band { fill: var(--turf-2); }
+.f-line { stroke: var(--chalk); stroke-opacity: 0.34; stroke-width: 1.2; }
+.f-hash { stroke: var(--chalk); stroke-opacity: 0.2; stroke-width: 1; }
+.f-side { stroke: var(--chalk); stroke-opacity: 0.5; stroke-width: 2; }
+.f-losl { stroke: var(--f-los); stroke-width: 2.4; } .f-gainl { stroke: var(--f-gain); stroke-width: 2.4; }
+.f-yd { font: 800 30px var(--display); fill: var(--chalk); fill-opacity: 0.11; text-anchor: middle; }
+.f-lab { font: 700 8.5px var(--display); letter-spacing: 0.07em; fill: var(--chalk); fill-opacity: 0.85; text-anchor: middle; paint-order: stroke; stroke: var(--turf); stroke-width: 2.5px; stroke-linejoin: round; pointer-events: none; }
+.f-num { font: 800 12px var(--display); text-anchor: middle; pointer-events: none; }
+.mk { cursor: pointer; } .mk[data-off="1"] { cursor: default; }
+.m-o { fill: var(--f-well); stroke: var(--chalk); stroke-width: 1.7; }
+.m-x { fill: none; stroke: var(--chalk); stroke-width: 2.3; stroke-linecap: round; }
+.m-clue { fill: var(--f-well); stroke: var(--f-gain); stroke-width: 1.7; stroke-dasharray: 3 2.2; }
+.m-cluenum { fill: var(--f-gain); }
+.m-miss { fill: var(--f-well); stroke: var(--f-bad); stroke-width: 1.7; }
+.m-missnum { fill: var(--chalk); fill-opacity: 0.85; }
+.m-sel { fill: none; stroke: var(--f-los); stroke-width: 2; }
+.m-hit { fill: #000; fill-opacity: 0; }
+.chip { transform-box: fill-box; transform-origin: center; }
+.chip.pop { animation: pop .28s cubic-bezier(.2, .9, .3, 1.4); }
+@keyframes pop { from { transform: scale(1.55); opacity: 0.3; } to { transform: scale(1); opacity: 1; } }
+
+/* play: scoreboard */
+#play, #quiz { gap: 20px; padding-top: 0; }
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; display: flex; flex-direction: column; margin-inline: calc(var(--gut) * -1); padding: 10px var(--gut) 0; background: var(--bg); }
+.bar-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+.city { font: 900 clamp(30px, 9vw, 56px)/0.9 var(--display); letter-spacing: 0.01em; text-transform: uppercase; overflow-wrap: anywhere; min-width: 0; }
+.city .y { color: var(--ink-3); }
+.clock { display: flex; flex: none; font: 800 clamp(34px, 10vw, 56px)/0.9 var(--display); }
+.clock .dg { display: inline-block; width: 0.56em; text-align: center; }
+.clock .colon { display: inline-block; width: 0.26em; text-align: center; opacity: 0.6; }
+.clock[data-low="1"] { color: var(--bad); }
+.clock[data-word="1"] { font-size: 22px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); padding-bottom: 3px; }
+.bar > .eyebrow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-bottom: 6px; }
+.chips { display: inline-flex; gap: 2px; flex: none; }
+.chips i { width: 10px; height: 10px; border-radius: 2px; border: 1px solid var(--line-2); }
+.count { flex: none; font: 700 17px/1 var(--display); letter-spacing: 0.08em; color: var(--ink-2); }
+.entry { display: flex; gap: 8px; margin-top: 10px; }
+.entry input { flex: 1; min-width: 0; }
+.confirm { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; font-size: 15px; }
+.fbrow { display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 34px; padding-block: 4px; }
+.fb { font-size: 14.5px; line-height: 1.35; color: var(--ink-2); min-width: 0; }
+.fb[data-k="hit"] { color: var(--good); } .fb[data-k="miss"] { color: var(--bad); } .fb[data-k="clue"] { color: var(--gain-ink); }
+.mini { flex: none; min-height: 30px; padding: 2px 10px; border: 1px solid var(--line-2); border-radius: 5px; background: transparent; color: var(--gain-ink); font: 600 13px var(--body); cursor: pointer; }
+.mini:hover { background: var(--hover); }
+/* the drive meter: a strip of turf, blue where you are, yellow at the next rank */
+.meter { position: relative; height: 9px; margin-inline: calc(var(--gut) * -1); background: var(--turf) repeating-linear-gradient(90deg, transparent 0, transparent calc(10% - 1px), rgba(243,245,239,0.42) calc(10% - 1px), rgba(243,245,239,0.42) 10%); }
+.meter i { position: absolute; top: 0; bottom: 0; transition: left .22s ease-out, width .22s ease-out; }
+.meter .gone { left: 0; background: rgba(243,245,239,0.2); }
+.meter .los, .meter .gain { top: -3px; bottom: -3px; width: 3px; margin-left: -1.5px; border-radius: 1px; }
+.meter .los { background: var(--f-los); } .meter .gain { background: var(--f-gain); }
+.bar[data-over="1"] { padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.bar[data-over="1"] .fbrow, .bar[data-over="1"] .meter { display: none; }
+.viewbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 16px; }
+.viewbar .right { display: flex; align-items: center; gap: 18px; }
+.seg.small span { min-height: 38px; padding: 4px 14px; font-size: 14px; }
+#pFieldWrap { max-width: 42rem; }
+.cap { min-height: 1.45em; margin-top: 8px; font-size: 14px; line-height: 1.45; color: var(--ink-3); }
+#pChart { display: flex; flex-direction: column; gap: 20px; }
+#pChart[hidden], .clues[hidden] { display: none; }
+.unit { display: flex; flex-direction: column; gap: 8px; }
+.unit-h { display: flex; justify-content: space-between; align-items: baseline; }
+.unit-h .n { font: 700 15px/1 var(--display); letter-spacing: 0.08em; color: var(--ink-2); }
+.slots { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 10.4rem), 1fr)); gap: 6px; }
+.slots[data-over="1"] { grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr)); }
+.slot { display: grid; grid-template-columns: 2.1rem minmax(0, 1fr) auto; align-items: center; gap: 8px; min-height: 46px; padding: 4px 8px 4px 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
+.slot .pos { font: 700 14px/1 var(--display); letter-spacing: 0.06em; color: var(--ink-2); }
+.slot .blank { height: 1px; border-bottom: 1px dashed var(--line-2); }
+.slot .nm { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 500; line-height: 1.25; overflow-wrap: break-word; min-width: 0; }
+.slot .aka { display: block; font-size: 13px; font-weight: 400; color: var(--ink-3); }
+.slot .jersey { flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 22px; padding-inline: 4px; border-radius: 4px; border: 1px solid var(--line-2); font: 800 14px/1 var(--display); letter-spacing: 0.02em; }
+.slot .hint { font-size: 14px; line-height: 1.25; color: var(--gain-ink); overflow-wrap: break-word; }
+.slot .side { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-3); }
+.slot .mark { font-weight: 700; font-size: 15px; }
+.slot[data-state="found"] .mark { color: var(--good); }
+.slot[data-state="clue"] .mark, .slot[data-state="open"] .mark { color: var(--gain-ink); }
+.slot[data-state="missed"] .mark { color: var(--bad); }
+.slot[data-state="missed"] .nm { color: var(--ink-2); }
+.slot.flash { animation: flash .9s ease-out; }
+@keyframes flash { from { background: var(--los-tint); border-color: var(--los); } }
+.slot[role="button"] { cursor: pointer; }
+.slot[role="button"]:hover { border-color: var(--line-2); }
+.slot[data-sel="1"] { border-color: var(--los); background: var(--los-tint); }
+
+.result { gap: 14px; }
+.tier { font: 900 clamp(42px, 12vw, 68px)/0.88 var(--display); letter-spacing: 0.01em; text-transform: uppercase; text-wrap: balance; }
+.result .sub { font-size: 14px; color: var(--ink-3); }
+.share { padding: 12px 14px; background: var(--raised); border: 1px solid var(--line); border-radius: 6px; color: var(--ink); font: 14.5px/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; user-select: all; -webkit-user-select: all; }
+/* side games: four downs */
+.jgrid { display: grid; gap: 28px; }
+@media (min-width: 56rem) { .jgrid { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 56px; align-items: start; } }
+.jcol { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.jcol > p { color: var(--ink-2); }
+.jtitle { font: 900 clamp(38px, 11vw, 60px)/0.88 var(--display); letter-spacing: 0.01em; text-transform: uppercase; }
+.route { list-style: none; padding: 0; display: flex; flex-direction: column; }
+.route li { position: relative; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; padding: 9px 0 9px 34px; }
+.route li::before { content: ""; position: absolute; left: 9px; top: 0; bottom: 0; border-left: 2px dashed var(--line-2); }
+.route li:first-child::before { top: 50%; } .route li:last-child::before { bottom: 50%; }
+.route li:only-child::before { display: none; }
+.route .dot { position: absolute; left: 2px; top: 50%; width: 16px; height: 16px; margin-top: -8px; border-radius: 50%; border: 2px solid var(--bg); outline: 1.5px solid var(--line-2); overflow: hidden; display: flex; }
+.route .dot i { flex: 1; }
+.route .tn { font: 800 25px/1 var(--display); letter-spacing: 0.02em; text-transform: uppercase; }
+.route .yrs { font-size: 14px; color: var(--ink-2); }
+.box { display: flex; flex-direction: column; gap: 16px; padding: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.box-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+.box-top .when { font: 800 26px/1 var(--display); letter-spacing: 0.02em; text-transform: uppercase; }
+.pts { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex: none; }
+.pts .v { font: 900 58px/0.8 var(--display); color: var(--gain-ink); }
+.tiles { display: flex; flex-wrap: wrap; gap: 8px; }
+.tile { flex: 1 1 5.4rem; display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; background: var(--raised); border: 1px solid var(--line); border-radius: 6px; }
+.tile .v { font: 800 32px/0.86 var(--display); }
+.tile .k { font: 600 11px/1.2 var(--body); letter-spacing: 0.1em; color: var(--ink-2); }
+.tease { font-size: 19px; line-height: 1.45; color: var(--ink); text-wrap: pretty; }
+.downs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.downs .now { font: 800 24px/1 var(--display); letter-spacing: 0.04em; text-transform: uppercase; }
+.pips { display: flex; gap: 5px; align-items: center; }
+.pips i { width: 26px; height: 8px; border-radius: 2px; border: 1px solid var(--line-2); }
+.pips i[data-s="x"] { background: var(--bad); border-color: var(--bad); }
+.pips i[data-s="o"] { background: var(--good); border-color: var(--good); }
+.pips i[data-s="now"] { border-color: var(--los); background: var(--los-tint); }
+.guessbox { display: flex; flex-direction: column; gap: 8px; }
+.sugg { list-style: none; padding: 0; display: flex; flex-direction: column; border: 1px solid var(--line-2); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.sugg button { display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: baseline; width: 100%; min-height: 46px; padding: 8px 14px; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--ink); font-size: 16px; font-weight: 500; text-align: left; cursor: pointer; }
+.sugg li:last-child button { border-bottom: 0; }
+.sugg button:hover, .sugg button[data-on="1"] { background: var(--los-tint); }
+.sugg .meta { font-size: 14px; font-weight: 400; color: var(--ink-2); }
+.clues { list-style: none; padding: 0; display: flex; flex-direction: column; }
+.clues li { display: grid; grid-template-columns: 5.2rem minmax(0, 1fr); gap: 10px; align-items: baseline; padding-block: 10px; border-top: 1px solid var(--line); font-size: 16px; }
+.clues li:last-child { border-bottom: 1px solid var(--line); }
+.next { font-size: 14px; color: var(--ink-3); }
+.tried { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 15px; color: var(--ink-2); }
+.tried b { color: var(--bad); margin-right: 8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .chip.pop, .slot.flash { animation: none; }
+  .meter i, .btn { transition: none; }
+}
+</style>
+
+<div class="wrap">
+
+<header class="site" id="site">
+  <button class="wordmark" type="button" id="navHome" aria-label="Ball Knowledge, today's games">
+    <svg viewBox="0 0 36 20" aria-hidden="true"><circle class="wm-o" cx="9" cy="10" r="7"/><path class="wm-x" d="M21 3.5l12 13M33 3.5l-12 13"/></svg>
+    <span>Ball Knowledge</span>
+  </button>
+  <nav class="nav" aria-label="Pages">
+    <button type="button" data-go="today">Today</button>
+    <button type="button" data-go="lineups">Lineups</button>
+    <button type="button" data-go="board">Board</button>
+    <button type="button" data-go="rules">Rules</button>
+  </nav>
+</header>
+
+<main id="v-today">
+  <section class="hero">
+    <div class="hero-copy">
+      <h1>Prove you<br>know <em>ball.</em></h1>
+      <p class="lede">Name the players who were actually on the field. Every team, every season, 2014 to now.</p>
+    </div>
+    <article class="card daily" id="dailyCard"></article>
+    <div class="also">
+      <div class="eyebrow">Also today</div>
+      <div class="rows" id="sideRows"></div>
+    </div>
+  </section>
+</main>
+
+<main id="v-lineups" hidden>
+  <section class="page narrow">
+    <h2>Any team, any season</h2>
+    <form id="pickForm">
+      <div class="ticket">
+        <span class="stripe" aria-hidden="true"><i id="tkA"></i><i id="tkB"></i></span>
+        <div><div class="t-name" id="tkName"></div><div class="t-sub" id="tkSub"></div></div>
+      </div>
+      <div class="fields">
+        <label class="field-l"><span class="eyebrow">Team</span><select id="selTeam"></select></label>
+        <label class="field-l"><span class="eyebrow">Season</span><select id="selYear"></select></label>
+      </div>
+      <fieldset>
+        <legend class="eyebrow">Who you're naming</legend>
+        <div class="seg">
+          <label><input type="radio" name="unit" id="unitAll" value="all" checked><span>All 24</span></label>
+          <label><input type="radio" name="unit" id="unitOff" value="off"><span>Offense</span></label>
+          <label><input type="radio" name="unit" id="unitDef" value="def"><span>Defense</span></label>
+        </div>
+      </fieldset>
+      <label class="check" for="chkClock"><input type="checkbox" id="chkClock" checked> Play against the clock</label>
+      <div class="row">
+        <button class="btn primary" type="submit" id="btnPlay">Play this lineup</button>
+        <button class="btn" type="button" id="btnRandom">Surprise me</button>
+      </div>
+    </form>
+  </section>
+</main>
+
+<main id="v-board" hidden>
+  <section class="page">
+    <h2>Your board</h2>
+    <p id="boardSum"></p>
+    <div class="pinned">
+      <div class="ticket">
+        <span class="stripe" aria-hidden="true"><i id="tkA2"></i><i id="tkB2"></i></span>
+        <div><div class="t-name" id="tkName2"></div><div class="t-sub" id="tkSub2"></div></div>
+        <button class="btn primary" type="button" id="bPlay">Play</button>
+      </div>
+    </div>
+    <div class="boards" id="board"></div>
+    <div class="legend" id="legend"></div>
+  </section>
+</main>
+
+<main id="v-rules" hidden>
+  <section class="page narrow">
+    <h2>Ground rules</h2>
+    <div class="eyebrow">Lineups</div>
+    <ul class="rules">
+      <li><b>A lineup is whoever played the most.</b> The 11 with the most offensive snaps, the 11 with the most defensive snaps, plus the kicker and punter. Regular season only.</li>
+      <li><b>Type a last name, a full name or a nickname.</b> Megatron and Beast Mode count. Short ones like OBJ need Enter.</li>
+      <li><b>Wrong guesses cost nothing.</b> Stuck? Tap a spot and take the clue: jersey number and college. That name then counts for half.</li>
+      <li><b>Injuries count.</b> If the star missed ten games, the backup is the answer.</li>
+    </ul>
+    <div class="eyebrow">Side games</div>
+    <ul class="rules">
+      <li><b>Four downs each.</b> Every miss opens a clue.</li>
+      <li><b>Journeyman</b> is one player who got around. His teams are the clue.</li>
+      <li><b>Box Score</b> is one monster game: the real stat line and the PPR points it was worth.</li>
+      <li><b>Name That Game</b> is a game or play famous enough to have a name, from any era.</li>
+    </ul>
+    <p class="note">Lineups, box scores and final scores come from nflverse (Pro Football Reference and NFL data), pulled in October 2026. The 2026 season is included so far. Your board lives in this browser only. A fan project, not affiliated with the NFL or any team.</p>
+  </section>
+</main>
+
+<main id="play" hidden>
+  <div class="bar" id="pBar">
+    <div class="eyebrow" id="pMeta"></div>
+    <div class="bar-top">
+      <div class="city" id="pCity"></div>
+      <div class="clock num" id="pClock" role="timer" aria-label="Time left"></div>
+    </div>
+    <div class="entry" id="pEntry">
+      <label class="vh" for="pInput">Player name or nickname</label>
+      <input type="text" id="pInput" placeholder="Name or nickname" autocomplete="off" autocapitalize="words" autocorrect="off" spellcheck="false" enterkeyhint="go">
+    </div>
+    <div class="confirm" id="pConfirm" hidden>
+      <span>End the round and show the answers?</span>
+      <button class="btn" type="button" id="pQuitYes">Show answers</button>
+      <button class="btn" type="button" id="pQuitNo">Keep going</button>
+    </div>
+    <div class="fbrow">
+      <p class="fb" id="pFb" aria-live="polite"></p>
+      <button class="mini" type="button" id="pClueBtn" hidden>Show clue, half credit</button>
+    </div>
+    <div class="meter" id="pMeter" aria-hidden="true"><i class="gone"></i><i class="gain"></i><i class="los"></i></div>
+  </div>
+
+  <section class="card result" id="pResult" hidden>
+    <div class="eyebrow" id="rWhy"></div>
+    <h2 class="tier" id="rTier"></h2>
+    <p id="rLine"></p>
+    <pre class="share" id="rShare" tabindex="0" aria-label="Result to share" hidden></pre>
+    <div class="row">
+      <button class="btn primary" type="button" id="rCopy">Copy result</button>
+      <button class="btn" type="button" id="rNext">Another lineup</button>
+      <button class="btn" type="button" id="rHome">Home</button>
+    </div>
+  </section>
+
+  <div class="viewbar">
+    <fieldset>
+      <legend class="vh">How to see the lineup</legend>
+      <div class="seg small">
+        <label><input type="radio" name="pview" id="viewField" value="field" checked><span>Field</span></label>
+        <label><input type="radio" name="pview" id="viewList" value="list"><span>List</span></label>
+      </div>
+    </fieldset>
+    <div class="right">
+      <span class="count num" id="pCount"></span>
+      <button class="linkbtn" type="button" id="pQuit">Give up</button>
+    </div>
+  </div>
+
+  <div id="pFieldWrap">
+    <figure class="field" id="pField"></figure>
+    <p class="cap" id="pCap"></p>
+  </div>
+  <div id="pChart" hidden></div>
+</main>
+
+<main id="quiz" hidden>
+  <button class="linkbtn" type="button" id="qHome">Back</button>
+  <div class="jgrid">
+    <div class="jcol">
+      <div class="eyebrow" id="qMeta"></div>
+      <h2 class="jtitle" id="qTitle"></h2>
+      <p id="qIntro"></p>
+      <div id="qBody"></div>
+    </div>
+    <div class="jcol">
+      <div class="guessbox">
+        <div class="downs"><span class="now" id="qDown"></span><span class="pips" id="qPips" role="img"></span></div>
+        <label class="vh" for="qInput">Your guess</label>
+        <input type="text" id="qInput" autocomplete="off" autocapitalize="words" autocorrect="off" spellcheck="false" enterkeyhint="go">
+        <ul class="sugg" id="qSugg" hidden></ul>
+        <p class="fb" id="qFb" aria-live="polite"></p>
+      </div>
+      <section class="card result" id="qResult" hidden>
+        <div class="eyebrow" id="qWhy"></div>
+        <h2 class="tier" id="qName"></h2>
+        <p id="qSub"></p>
+        <pre class="share" id="qShare" tabindex="0" aria-label="Result to share" hidden></pre>
+        <div class="row">
+          <button class="btn primary" type="button" id="qCopy">Copy result</button>
+          <button class="btn" type="button" id="qNext">Another one</button>
+          <button class="btn" type="button" id="qBack">Home</button>
+        </div>
+      </section>
+      <ul class="clues" id="qClues" hidden></ul>
+      <p class="next" id="qNextClue"></p>
+      <ul class="tried" id="qTried"></ul>
+    </div>
+  </div>
+</main>
+
+</div>
+
+<script>
+(function () {
+'use strict';
+const D = /*__DATA__*/null;
+const P = D.players, L = D.lineups, ALIAS = D.alias, PATHS = D.paths, POS = D.pos;
+const NICK = D.nick || {}, BOOM = D.boom || [], JMBIG = D.jmbig || {}, NAMED = D.named || [];
+const SITE = typeof window.BK_SITE === 'string' ? window.BK_SITE : '';
+const Y0 = 2014, Y1 = 2026, YEARS = [];
+for (let y = Y0; y <= Y1; y++) YEARS.push(y);
+
+// city, nickname, two team colors
+const T = {
+  ARI: ['Arizona', 'Cardinals', '#97233F', '#FFB612'], ATL: ['Atlanta', 'Falcons', '#A71930', '#000000'],
+  BAL: ['Baltimore', 'Ravens', '#241773', '#9E7C0C'], BUF: ['Buffalo', 'Bills', '#00338D', '#C60C30'],
+  CAR: ['Carolina', 'Panthers', '#0085CA', '#101820'], CHI: ['Chicago', 'Bears', '#0B162A', '#C83803'],
+  CIN: ['Cincinnati', 'Bengals', '#FB4F14', '#000000'], CLE: ['Cleveland', 'Browns', '#311D00', '#FF3C00'],
+  DAL: ['Dallas', 'Cowboys', '#003594', '#869397'], DEN: ['Denver', 'Broncos', '#FB4F14', '#002244'],
+  DET: ['Detroit', 'Lions', '#0076B6', '#B0B7BC'], GB: ['Green Bay', 'Packers', '#203731', '#FFB612'],
+  HOU: ['Houston', 'Texans', '#03202F', '#A71930'], IND: ['Indianapolis', 'Colts', '#002C5F', '#A2AAAD'],
+  JAX: ['Jacksonville', 'Jaguars', '#006778', '#D7A22A'], KC: ['Kansas City', 'Chiefs', '#E31837', '#FFB81C'],
+  LAC: ['Los Angeles', 'Chargers', '#0080C6', '#FFC20E'], LAR: ['Los Angeles', 'Rams', '#003594', '#FFA300'],
+  LV: ['Las Vegas', 'Raiders', '#000000', '#A5ACAF'], MIA: ['Miami', 'Dolphins', '#008E97', '#FC4C02'],
+  MIN: ['Minnesota', 'Vikings', '#4F2683', '#FFC62F'], NE: ['New England', 'Patriots', '#002244', '#C60C30'],
+  NO: ['New Orleans', 'Saints', '#D3BC8D', '#101820'], NYG: ['New York', 'Giants', '#0B2265', '#A71930'],
+  NYJ: ['New York', 'Jets', '#125740', '#FFFFFF'], PHI: ['Philadelphia', 'Eagles', '#004C54', '#A5ACAF'],
+  PIT: ['Pittsburgh', 'Steelers', '#FFB612', '#101820'], SEA: ['Seattle', 'Seahawks', '#002244', '#69BE28'],
+  SF: ['San Francisco', '49ers', '#AA0000', '#B3995D'], TB: ['Tampa Bay', 'Buccaneers', '#D50A0A', '#34302B'],
+  TEN: ['Tennessee', 'Titans', '#0C2340', '#4B92DB'], WAS: ['Washington', 'Commanders', '#5A1414', '#FFB612']
+};
+const TEAM_IDS = Object.keys(T).sort();
+const DIVS = [['AFC East', ['BUF', 'MIA', 'NE', 'NYJ']], ['AFC North', ['BAL', 'CIN', 'CLE', 'PIT']], ['AFC South', ['HOU', 'IND', 'JAX', 'TEN']], ['AFC West', ['DEN', 'KC', 'LV', 'LAC']],
+  ['NFC East', ['DAL', 'NYG', 'PHI', 'WAS']], ['NFC North', ['CHI', 'DET', 'GB', 'MIN']], ['NFC South', ['ATL', 'CAR', 'NO', 'TB']], ['NFC West', ['ARI', 'LAR', 'SF', 'SEA']]];
+function teamAt(t, y) {
+  let city = T[t][0], nick = T[t][1];
+  if (t === 'LAR' && y < 2016) city = 'St. Louis';
+  if (t === 'LAC' && y < 2017) city = 'San Diego';
+  if (t === 'LV' && y < 2020) city = 'Oakland';
+  if (t === 'WAS') nick = y < 2020 ? '' : y < 2022 ? 'Football Team' : 'Commanders';
+  return { city: city, nick: nick, full: nick ? city + ' ' + nick : city, short: nick || city, the: nick ? 'the ' + nick : city, c1: T[t][2], c2: T[t][3] };
+}
+const POSWORD = { QB: 'quarterback', RB: 'running back', FB: 'fullback', WR: 'wide receiver', TE: 'tight end', T: 'tackle', G: 'guard', C: 'center',
+  OL: 'offensive lineman', DE: 'defensive end', DT: 'defensive tackle', NT: 'nose tackle', DL: 'defensive lineman', OLB: 'outside linebacker',
+  ILB: 'inside linebacker', LB: 'linebacker', CB: 'cornerback', S: 'safety', DB: 'defensive back', K: 'kicker', P: 'punter' };
+
+/* ---------- small helpers ---------- */
+const $ = function (id) { return document.getElementById(id); };
+function fill(n, attrs, kids, from) {
+  if (attrs) for (const k in attrs) {
+    const v = attrs[k];
+    if (v == null || v === false) continue;
+    if (k === 'class') n.setAttribute('class', v);
+    else if (k === 'text') n.textContent = v;
+    else if (k.slice(0, 2) === 'on') n.addEventListener(k.slice(2), v);
+    else if (k === 'bg') n.style.background = v;
+    else n.setAttribute(k, v === true ? '' : v);
+  }
+  for (let i = from; i < kids.length; i++) {
+    const c = kids[i];
+    if (c == null || c === false) continue;
+    if (Array.isArray(c)) c.forEach(function (x) { if (x != null && x !== false) n.append(x); });
+    else n.append(c);
+  }
+  return n;
+}
+function el(tag, attrs) { return fill(document.createElement(tag), attrs, arguments, 2); }
+function sv(tag, attrs) { return fill(document.createElementNS('http://www.w3.org/2000/svg', tag), attrs, arguments, 2); }
+function rng(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function shuffled(arr, seed) {
+  const a = arr.slice(), r = rng(seed);
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); const x = a[i]; a[i] = a[j]; a[j] = x; }
+  return a;
+}
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function mod(n, m) { return ((n % m) + m) % m; }
+function range(n) { const a = []; for (let i = 0; i < n; i++) a.push(i); return a; }
+function clockText(ms) { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+function bits(n) { let c = 0; while (n) { c += n & 1; n >>>= 1; } return c; }
+function joinNice(a) { return a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]; }
+function pad2(n) { return String(n).padStart(2, '0'); }
+function lum(hex) {
+  const n = parseInt(hex.slice(1), 16), f = function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  return 0.2126 * f((n >> 16) & 255) + 0.7152 * f((n >> 8) & 255) + 0.0722 * f(n & 255);
+}
+function inkOn(hex) { return lum(hex) > 0.19 ? '#10151C' : '#FFFFFF'; }
+function an(word) { return (/^[aeio]/.test(word) ? 'An ' : 'A ') + word; }
+
+/* ---------- names and nicknames ---------- */
+const SUF = { jr: 1, sr: 1, ii: 1, iii: 1, iv: 1, v: 1 };
+function toks(s) {
+  return s.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[.'’`]/g, '')
+    .split(/\s+/).filter(function (t, i) { return t && !(i > 0 && SUF[t]); });
+}
+function sq(s) { return s.replace(/[^a-z0-9]/g, ''); }
+function typedKey(s) { return sq(toks(s).join('')); }
+function namesOf(p) { return [P[p][0]].concat(ALIAS[p] || []); }
+// the short and long forms of a first name are the same guy: Matt Stafford, Mike Evans, Pat Mahomes
+const FIRST = {};
+[['michael', 'mike', 'micheal'], ['matthew', 'matt', 'mathew'], ['christopher', 'chris'], ['patrick', 'pat'], ['william', 'will', 'bill', 'billy', 'willie'],
+  ['robert', 'rob', 'bob', 'bobby', 'robbie', 'robby'], ['joseph', 'joe', 'joey'], ['joshua', 'josh'], ['daniel', 'dan', 'danny'], ['benjamin', 'ben'],
+  ['nicholas', 'nick', 'nicolas'], ['anthony', 'tony'], ['thomas', 'tom', 'tommy'], ['james', 'jim', 'jimmy'], ['jonathan', 'jon', 'jonathon'], ['samuel', 'sam'],
+  ['alexander', 'alex'], ['andrew', 'drew', 'andy'], ['zachary', 'zach', 'zack', 'zac'], ['jacob', 'jake'], ['kenneth', 'ken', 'kenny'], ['stephen', 'steven', 'steve'],
+  ['timothy', 'tim'], ['gregory', 'greg'], ['jeffrey', 'jeffery', 'jeff'], ['nathan', 'nate', 'nathaniel'], ['cameron', 'cam'], ['mitchell', 'mitch'], ['david', 'dave'],
+  ['richard', 'rich', 'rick', 'ricky'], ['edward', 'ed', 'eddie'], ['charles', 'charlie'], ['ronald', 'ron', 'ronnie'], ['lawrence', 'larry'], ['vincent', 'vince'],
+  ['frederick', 'fred', 'freddie'], ['raymond', 'ray'], ['phillip', 'philip', 'phil'], ['theodore', 'ted', 'teddy'], ['maxwell', 'max'], ['gabriel', 'gabe'],
+  ['trenton', 'trent'], ['dominique', 'dominic', 'dom'], ['bradley', 'brad'], ['douglas', 'doug'], ['peter', 'pete'], ['randall', 'randy'], ['reginald', 'reggie'],
+  ['russell', 'russ'], ['clayton', 'clay'], ['wesley', 'wes'], ['ezekiel', 'zeke'], ['rodney', 'rod'], ['walter', 'walt'], ['terrence', 'terrance', 'terry']
+].forEach(function (g) { g.forEach(function (a) { FIRST[a] = g.filter(function (b) { return b !== a; }); }); });
+function nickShown(p) { return (NICK[p] && NICK[p][0]) || ''; }
+function nickKeys(p) { return (NICK[p] || []).filter(Boolean).map(function (n) { return { key: typedKey(n), label: n }; }).filter(function (k) { return k.key; }); }
+// keys: accepted as soon as they are typed. enter: nicknames too short for that (AB, JJ, X), accepted on Enter.
+function keysOf(p) {
+  const full = {}, last = {}, enter = {};
+  namesOf(p).forEach(function (nm) {
+    const t = toks(nm);
+    if (!t.length) return;
+    const rest = t.slice(1).join('');
+    full[sq(t.join(''))] = 1;
+    if (t.length > 1) {
+      (FIRST[sq(t[0])] || []).forEach(function (v) { full[sq(v + rest)] = 1; });
+      last[sq(rest)] = 1; last[sq(t[t.length - 1])] = 1; last[sq(t[t.length - 1].split('-').pop())] = 1;
+    }
+  });
+  nickKeys(p).forEach(function (k) { if (k.key.length >= 4) full[k.key] = 1; else enter[k.key] = 1; });
+  return { keys: Object.keys(Object.assign(full, last)).filter(function (k) { return k.length > 1; }), enter: Object.keys(enter) };
+}
+function editDist(a, b, max) {
+  if (Math.abs(a.length - b.length) > max) return max + 1;
+  let prev2 = null, prev = [];
+  for (let j = 0; j <= b.length; j++) prev[j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      let v = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+      if (prev2 && i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) v = Math.min(v, prev2[j - 2] + 1);
+      cur[j] = v;
+    }
+    prev2 = prev; prev = cur;
+  }
+  return prev[b.length];
+}
+
+/* ---------- derived data ---------- */
+const STARTS = [], JERSEYS = [];
+for (let i = 0; i < P.length; i++) { STARTS[i] = 0; JERSEYS[i] = []; }
+const ALL_KEYS = [];
+YEARS.forEach(function (y) { TEAM_IDS.forEach(function (t) { ALL_KEYS.push(y + t); }); });
+ALL_KEYS.forEach(function (k) {
+  L[k].forEach(function (s) { STARTS[s[0]]++; if (s[2] != null && JERSEYS[s[0]].indexOf(s[2]) < 0) JERSEYS[s[0]].push(s[2]); });
+});
+const DAILY_ORDER = shuffled(ALL_KEYS, 20141);
+const JPOOL = Object.keys(PATHS).map(Number).sort(function (a, b) { return a - b; });
+const JDAILY = shuffled(JPOOL.filter(function (i) { return PATHS[i][1] >= 4; }), 20142);
+const BDAILY = shuffled(range(BOOM.length), 31);
+const NDAILY = shuffled(range(NAMED.length), 31);
+function dayNo() { const n = new Date(); return Math.round((Date.UTC(n.getFullYear(), n.getMonth(), n.getDate()) - Date.UTC(2026, 9, 11)) / 864e5) + 1; }
+function dailyKey(n) { return DAILY_ORDER[mod(n - 1, DAILY_ORDER.length)]; }
+function keyYear(k) { return +k.slice(0, 4); }
+function keyTeam(k) { return k.slice(4); }
+function keyLabel(k) { return keyYear(k) + ' ' + teamAt(keyTeam(k), keyYear(k)).full; }
+function todayText() { try { return new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); } catch (e) { return ''; } }
+
+/* ---------- storage: a per-browser convenience, the game works without it ---------- */
+const STORE = 'ballknowledge.v1';
+let save = { known: {}, daily: {}, jm: {}, boom: {}, named: {}, live: null };
+try {
+  const s = JSON.parse(localStorage.getItem(STORE));
+  if (s && typeof s === 'object') save = { known: s.known || {}, daily: s.daily || {}, jm: s.jm || {}, boom: s.boom || {}, named: s.named || {}, live: s.live || null };
+} catch (e) {}
+function persist() { try { localStorage.setItem(STORE, JSON.stringify(save)); } catch (e) {} }
+
+function copyText(text, btn, pre) {
+  const done = function (ok) {
+    const old = btn.dataset.label || btn.textContent;
+    btn.dataset.label = old;
+    btn.textContent = ok ? 'Copied' : 'Select the text and copy it';
+    setTimeout(function () { btn.textContent = old; }, 2200);
+    if (!ok && pre) { pre.hidden = false; try { const r = document.createRange(); r.selectNodeContents(pre); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); } catch (e) {} }
+  };
+  try { navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); }); }
+  catch (e) { done(false); }
+}
+
+/* ---------- views ---------- */
+const PAGES = ['today', 'lineups', 'board', 'rules'];
+let view = 'today';
+function show(v) {
+  view = v;
+  PAGES.forEach(function (p) { $('v-' + p).hidden = v !== p; });
+  $('play').hidden = v !== 'play'; $('quiz').hidden = v !== 'quiz';
+  $('site').setAttribute('data-focus', v === 'play' || v === 'quiz' ? '1' : '0');
+  Array.prototype.forEach.call(document.querySelectorAll('.nav button'), function (b) { if (b.dataset.go === v) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+  window.scrollTo(0, 0);
+}
+
+/* ================= the field ================= */
+// One snap, seen from above: ball on the 40, first and ten, line to gain at midfield. 9px to the yard.
+const FW = 360, FH = 210, LOS = 132;
+function spread(n, c, gap) { const out = []; for (let k = 0; k < n; k++) out.push(c + (k - (n - 1) / 2) * gap); return out; }
+function layout(slots) {
+  const xy = [];
+  const O = [], Dn = [];
+  for (let i = 0; i < 11; i++) O.push({ i: i, pos: slots[i].pos });
+  for (let i = 11; i < 22; i++) Dn.push({ i: i, pos: slots[i].pos });
+  const of = function (list, set) { return list.filter(function (s) { return set.indexOf(s.pos) >= 0; }); };
+  // offensive line: tackles outside, guards, center over the ball
+  const ol = of(O, ['T', 'G', 'C', 'OL']), seat = [null, null, null, null, null];
+  [['C', [2]], ['G', [1, 3]], ['T', [0, 4]]].forEach(function (r) {
+    ol.forEach(function (s) {
+      if (s.used || s.pos !== r[0]) return;
+      for (let q = 0; q < r[1].length; q++) if (!seat[r[1][q]]) { seat[r[1][q]] = s; s.used = 1; break; }
+    });
+  });
+  ol.forEach(function (s) { if (s.used) return; for (let q = 0; q < 5; q++) if (!seat[q]) { seat[q] = s; s.used = 1; break; } });
+  seat.forEach(function (s, k) { if (s) xy[s.i] = [132 + 24 * k, 13]; });
+  of(O, ['QB']).forEach(function (s) { xy[s.i] = [180, 48]; });
+  const bx = [[212, 48], [148, 48]], wx = [[24, 13], [336, 17], [66, 19], [294, 19]], tx = [[252, 13], [108, 13]];
+  of(O, ['RB', 'FB']).forEach(function (s, k) { xy[s.i] = bx[k] || [180, 68]; });
+  of(O, ['WR']).forEach(function (s, k) { xy[s.i] = wx[k] || [180, 68]; });
+  of(O, ['TE']).forEach(function (s, k) { xy[s.i] = tx[k] || [180, 68]; });
+  // the front: ends outside the tackles; with three linemen the outside backers walk up to the edge
+  const dl = of(Dn, ['DE', 'DT', 'NT', 'DL']);
+  const ends = dl.filter(function (s) { return s.pos === 'DE'; }), ins = dl.filter(function (s) { return s.pos !== 'DE'; });
+  const line = (ends[0] ? [ends[0]] : []).concat(ins, ends.slice(1));
+  const lb = of(Dn, ['OLB', 'ILB', 'LB']);
+  let olb = lb.filter(function (s) { return s.pos === 'OLB'; });
+  const mid = lb.filter(function (s) { return s.pos !== 'OLB'; });
+  let edge = [];
+  if (line.length <= 3) { edge = olb.slice(0, 2); olb = olb.slice(2); }
+  const front = (edge[0] ? [edge[0]] : []).concat(line, edge[1] ? [edge[1]] : []);
+  spread(front.length, 180, front.length > 5 ? 24 : 27).forEach(function (x, k) { xy[front[k].i] = [x, edge.indexOf(front[k]) >= 0 ? -17 : -13]; });
+  const second = (olb[0] ? [olb[0]] : []).concat(mid, olb.slice(1));
+  spread(second.length, 180, second.length > 4 ? 32 : 40).forEach(function (x, k) { xy[second[k].i] = [x, -47]; });
+  const cb = of(Dn, ['CB']), sf = of(Dn, ['S']);
+  of(Dn, ['DB']).forEach(function (s) { (sf.length < 2 ? sf : cb).push(s); });
+  const cx = [[24, -40], [336, -40], [66, -46], [294, -46], [104, -74], [256, -74]];
+  const sx = [[126, -104], [234, -104], [180, -79], [180, -106], [78, -100], [282, -100]];
+  cb.forEach(function (s, k) { xy[s.i] = cx[k] || [180, -70]; });
+  sf.forEach(function (s, k) { xy[s.i] = sx[k] || [180, -70]; });
+  for (let i = 0; i < 22; i++) if (!xy[i]) xy[i] = [180, i < 11 ? 68 : -70];
+  xy[22] = [28, 54]; xy[23] = [332, 54];
+  return xy.map(function (p, i) { return { x: p[0], y: LOS + p[1], side: i < 11 ? 'O' : i < 22 ? 'D' : 'S' }; });
+}
+function fieldBase(svg) {
+  svg.append(sv('rect', { class: 'f-turf', x: 0, y: 0, width: FW, height: FH }));
+  [-2, 0].forEach(function (k) { svg.append(sv('rect', { class: 'f-band', x: 0, y: LOS + k * 45, width: FW, height: 45 })); });
+  for (let y = LOS - 126; y < FH; y += 9) {
+    if ((y - LOS) % 45 === 0) { svg.append(sv('line', { class: 'f-line', x1: 5, x2: FW - 5, y1: y, y2: y })); continue; }
+    [[156, 162], [198, 204]].forEach(function (h) { svg.append(sv('line', { class: 'f-hash', x1: h[0], x2: h[1], y1: y, y2: y })); });
+  }
+  svg.append(sv('line', { class: 'f-side', x1: 5, x2: 5, y1: 0, y2: FH }), sv('line', { class: 'f-side', x1: FW - 5, x2: FW - 5, y1: 0, y2: FH }));
+  // painted numbers read from the nearer sideline, the yard line running between the digits
+  [[LOS, '4'], [LOS - 90, '5']].forEach(function (n) {
+    [[48, 90, n[1], '0'], [FW - 48, -90, '0', n[1]]].forEach(function (s) {
+      svg.append(sv('text', { class: 'f-yd', transform: 'translate(' + s[0] + ',' + (n[0] - 15) + ') rotate(' + s[1] + ')', dy: '0.36em', text: s[2] }),
+        sv('text', { class: 'f-yd', transform: 'translate(' + s[0] + ',' + (n[0] + 15) + ') rotate(' + s[1] + ')', dy: '0.36em', text: s[3] }));
+    });
+  });
+  svg.append(sv('line', { class: 'f-gainl', x1: 5, x2: FW - 5, y1: LOS - 90, y2: LOS - 90 }), sv('line', { class: 'f-losl', x1: 5, x2: FW - 5, y1: LOS, y2: LOS }));
+}
+function openShape(def, center) {
+  if (def) return sv('path', { class: 'm-x', d: 'M-6.5-6.5L6.5 6.5M6.5-6.5L-6.5 6.5' });
+  return center ? sv('rect', { class: 'm-o', x: -9, y: -9, width: 18, height: 18, rx: 1.5 }) : sv('circle', { class: 'm-o', r: 9.5 });
+}
+function numText(num, color, cls) {
+  const t = sv('text', { class: 'f-num' + (cls ? ' ' + cls : ''), dy: '0.36em', text: num == null ? '·' : String(num) });
+  if (color) t.setAttribute('fill', color);
+  return t;
+}
+// slots: [{pos, state, clue, num, inPlay}] x24. opt: {ghost, team, onPick, label}
+function makeField(host, slots, opt) {
+  opt = opt || {};
+  host.textContent = '';
+  const svg = sv('svg', { viewBox: opt.ghost ? '0 16 360 180' : '0 0 ' + FW + ' ' + FH, role: 'img', 'aria-label': opt.label || 'The lineup drawn as a formation' });
+  fieldBase(svg);
+  const pts = layout(slots), c1 = opt.team ? opt.team.c1 : '#FFFFFF', c2 = opt.team ? opt.team.c2 : '#FFFFFF';
+  const ring = lum(c2) > 0.12 && c2.toUpperCase() !== c1.toUpperCase() ? c2 : '#F3F5EF', ink = inkOn(c1);
+  const api = { sel: -1 };
+  const gs = pts.map(function (m, i) {
+    const g = sv('g', { class: 'mk', transform: 'translate(' + m.x + ',' + m.y + ')' });
+    if (opt.onPick) g.addEventListener('click', function () { opt.onPick(i); });
+    svg.append(g);
+    return g;
+  });
+  api.paint = function (i, pop) {
+    const g = gs[i], s = slots[i], m = pts[i], def = m.side === 'D';
+    g.textContent = '';
+    const off = !s.inPlay || opt.ghost;
+    g.setAttribute('data-off', off || !opt.onPick ? '1' : '0');
+    if (opt.ghost && m.side === 'S') return;
+    const chip = sv('g', { class: 'chip' + (pop ? ' pop' : '') });
+    if (off) { chip.setAttribute('opacity', opt.ghost ? '0.72' : '0.28'); chip.append(openShape(def, s.pos === 'C')); g.append(chip); return; }
+    if (api.sel === i) g.append(sv('circle', { class: 'm-sel', r: 15 }));
+    if (s.state === 1 || s.state === 2) {
+      chip.append(sv('circle', { r: 10.5, fill: c1, stroke: s.state === 2 ? '#FFD84A' : ring, 'stroke-width': 1.9 }), numText(s.num, ink));
+    } else if (s.state === 3) chip.append(sv('circle', { class: 'm-miss', r: 10 }), numText(s.num, null, 'm-missnum'));
+    else if (s.clue) chip.append(sv('circle', { class: 'm-clue', r: 10 }), numText(s.num, null, 'm-cluenum'));
+    else chip.append(openShape(def, s.pos === 'C'));
+    g.append(chip, sv('text', { class: 'f-lab', y: def ? -14 : 22, text: s.pos }));
+    if (opt.onPick) g.append(sv('circle', { class: 'm-hit', r: 15 }));
+  };
+  api.paintAll = function () { for (let i = 0; i < gs.length; i++) api.paint(i); };
+  api.select = function (i) { const old = api.sel; api.sel = i; if (old >= 0) api.paint(old); if (i >= 0) api.paint(i); };
+  api.paintAll();
+  host.append(svg);
+  return api;
+}
+const GHOST = ['QB', 'RB', 'WR', 'WR', 'WR', 'TE', 'T', 'T', 'G', 'G', 'C', 'DE', 'DE', 'DT', 'DT', 'OLB', 'ILB', 'OLB', 'CB', 'CB', 'S', 'S', 'K', 'P']
+  .map(function (p) { return { pos: p, state: 0, clue: false, num: null, inPlay: true }; });
+
+/* ================= lineup game ================= */
+const TIERS = [
+  [1, 'Certified Ball Knower', 'Every name. Put it in the group chat.'],
+  [0.8, 'Scout', 'You watch the trenches. Respect.'],
+  [0.6, 'Film Junkie', 'Solid tape. A few names got away.'],
+  [0.4, 'Sunday Regular', 'You know the stars. The line is another story.'],
+  [0.2, 'Fantasy Manager', 'Skill positions only, huh.'],
+  [0, 'Here for the Wings', 'You came for the food. No shame in it.']
+];
+function tierFor(pct) { for (let i = 0; i < TIERS.length; i++) if (pct >= TIERS[i][0] - 1e-9) return TIERS[i]; return TIERS[TIERS.length - 1]; }
+const UNITS = [['Offense', 0, 11], ['Defense', 11, 22], ['Kicker and punter', 22, 24]];
+let game = null, tick = null, fieldApi = null;
+
+function newGame(key, opt) {
+  opt = opt || {};
+  const unit = opt.unit || 'all';
+  const r = opt.restore;
+  const g = { key: key, unit: unit, timed: opt.timed !== false, daily: opt.daily || 0, over: false, reason: '', endAt: 0, slots: [], sel: -1 };
+  L[key].forEach(function (s, i) {
+    const inPlay = unit === 'all' || (unit === 'off' && i < 11) || (unit === 'def' && i >= 11 && i < 22);
+    const k = keysOf(s[0]);
+    g.slots.push({ i: i, p: s[0], pos: s[1], num: s[2], pct: s[3], inPlay: inPlay, state: r ? r.st[i] : 0, clue: r ? !!r.cl[i] : false, keys: k.keys, enter: k.enter, node: null });
+  });
+  g.total = g.slots.filter(function (s) { return s.inPlay; }).length;
+  if (r) { g.over = !!r.over; g.reason = r.reason || ''; g.endAt = r.endAt || 0; }
+  else if (g.timed) g.endAt = Date.now() + (unit === 'all' ? 300 : 150) * 1000;
+  return g;
+}
+function packGame(g) {
+  return { key: g.key, unit: g.unit, timed: g.timed, daily: g.daily, over: g.over, reason: g.reason, endAt: g.endAt,
+    st: g.slots.map(function (s) { return s.state; }), cl: g.slots.map(function (s) { return s.clue ? 1 : 0; }) };
+}
+function gameStats(g) {
+  let found = 0, clued = 0;
+  g.slots.forEach(function (s) { if (!s.inPlay) return; if (s.state === 1) found++; if (s.state === 2) { found++; clued++; } });
+  return { found: found, clued: clued, total: g.total, pts: found - clued / 2, pct: (found - clued / 2) / g.total };
+}
+// the line to gain: the next rank up and how many names it takes
+function nextUp(g) {
+  const st = gameStats(g);
+  for (let i = TIERS.length - 1; i >= 0; i--) {
+    const need = Math.ceil(TIERS[i][0] * st.total - st.pts - 1e-9);
+    if (need > 0) return { need: need, tier: TIERS[i] };
+  }
+  return null;
+}
+function shareText(g) {
+  const st = gameStats(g), tier = tierFor(st.pct);
+  const sq3 = function (a, b) { return g.slots.slice(a, b).filter(function (s) { return s.inPlay; }).map(function (s) { return s.state === 1 ? '🟩' : s.state === 2 ? '🟨' : '⬛'; }).join(''); };
+  const lines = ['Ball Knowledge' + (g.daily ? ' · Daily no. ' + g.daily : ''), keyLabel(g.key) + (g.unit === 'off' ? ', offense' : g.unit === 'def' ? ', defense' : '')];
+  lines.push(st.found + '/' + st.total + ' · ' + tier[1] + (g.timed ? '' : ' (no clock)'));
+  if (g.unit !== 'def') lines.push('OFF ' + sq3(0, 11));
+  if (g.unit !== 'off') lines.push('DEF ' + sq3(11, 22));
+  if (g.unit === 'all') lines.push('K/P ' + sq3(22, 24));
+  if (SITE) lines.push(SITE);
+  return lines.join('\n');
+}
+function chipsEl(tm) { return el('span', { class: 'chips', 'aria-hidden': 'true' }, el('i', { bg: tm.c1 }), el('i', { bg: tm.c2 })); }
+function setClock(text, word) {
+  const c = $('pClock');
+  if (c.dataset.t === text) return;
+  c.dataset.t = text; c.textContent = '';
+  if (word) { c.setAttribute('data-word', '1'); c.textContent = text; return; }
+  c.removeAttribute('data-word');
+  text.split('').forEach(function (ch) { c.append(el('span', { class: ch === ':' ? 'colon' : 'dg', text: ch })); });
+}
+function paintMeter(node, g) {
+  const st = gameStats(g), nx = nextUp(g), pct = Math.max(0, Math.min(1, st.pct)) * 100;
+  node.children[0].style.width = pct + '%';
+  node.children[2].style.left = pct + '%';
+  node.children[1].hidden = !nx;
+  if (nx) node.children[1].style.left = nx.tier[0] * 100 + '%';
+}
+
+function setPView(v) {
+  $('pFieldWrap').hidden = v !== 'field'; $('pChart').hidden = v !== 'list';
+  $('viewField').checked = v === 'field'; $('viewList').checked = v === 'list';
+}
+function startLineup(key, opt) {
+  clearInterval(tick);
+  game = newGame(key, opt);
+  const y = keyYear(key), tm = teamAt(keyTeam(key), y);
+  const city = $('pCity'); city.textContent = '';
+  city.append(el('span', { class: 'y', text: y + ' ' }), tm.city);
+  const meta = $('pMeta'); meta.textContent = '';
+  const bits2 = [tm.nick, y === Y1 ? 'Season so far' : ''];
+  if (game.unit !== 'all') bits2.push(game.unit === 'off' ? 'Offense' : 'Defense');
+  if (game.daily) bits2.push('Daily no. ' + game.daily);
+  meta.append(chipsEl(tm), el('span', { text: bits2.filter(Boolean).join(' · ') }));
+
+  fieldApi = makeField($('pField'), game.slots, { team: tm, onPick: onPick, label: keyLabel(key) + ', drawn as a formation. The List view has the same spots as text.' });
+  const chart = $('pChart'); chart.textContent = ''; game.cnts = [];
+  UNITS.forEach(function (u) {
+    const ss = game.slots.slice(u[1], u[2]).filter(function (s) { return s.inPlay; });
+    if (!ss.length) return;
+    const ul = el('ul', { class: 'slots' });
+    ss.forEach(function (s) {
+      s.node = el('li', { class: 'slot' });
+      const go = function () { if (game && !game.over && s.state === 0) onPick(s.i); };
+      s.node.addEventListener('click', go);
+      s.node.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+      ul.append(s.node);
+    });
+    const cnt = el('span', { class: 'n num' });
+    chart.append(el('section', { class: 'unit' }, el('div', { class: 'unit-h' }, el('div', { class: 'eyebrow', text: u[0] }), cnt), ul));
+    game.cnts.push({ ss: ss, node: cnt });
+  });
+  game.tm = tm;
+  $('pConfirm').hidden = true; $('pInput').value = ''; $('pClueBtn').hidden = true; $('pClock').dataset.t = '';
+  show('play');
+  if (game.over) { paintAll(); showResult(); }
+  else if (game.timed && Date.now() >= game.endAt) { paintAll(); finish('time'); }
+  else {
+    $('pResult').hidden = true; $('pEntry').hidden = false; $('pQuit').hidden = false; $('pBar').removeAttribute('data-over');
+    $('pCap').textContent = 'Tap a spot to ask for a clue.';
+    setPView('field');
+    paintAll(); idleFb(); saveLive();
+    if (game.timed) tick = setInterval(onTick, 250);
+    onTick();
+    try { $('pInput').focus({ preventScroll: true }); } catch (e) {}
+  }
+}
+function onTick() {
+  if (!game || game.over) return;
+  const c = $('pClock');
+  if (!game.timed) { setClock('No clock', true); c.removeAttribute('data-low'); return; }
+  const left = game.endAt - Date.now();
+  setClock(clockText(left));
+  if (left <= 30000) c.setAttribute('data-low', '1'); else c.removeAttribute('data-low');
+  if (left <= 0) finish('time');
+}
+function jerseyEl(s, filled) {
+  if (s.num == null) return null;
+  const j = el('span', { class: 'jersey num', text: String(s.num) });
+  if (filled) { j.style.background = game.tm.c1; j.style.color = inkOn(game.tm.c1); j.style.borderColor = game.tm.c1; }
+  return j;
+}
+function clueText(s) { return s.pos + ' clue: ' + (s.num != null ? 'wore #' + s.num + ', ' : '') + 'went to ' + P[s.p][1] + '.'; }
+function paintSlot(s, flash) {
+  const n = s.node; if (!n) return;
+  n.textContent = '';
+  n.className = 'slot' + (flash ? ' flash' : '');
+  n.dataset.state = ['open', 'found', 'clue', 'missed'][s.state];
+  const live = s.state === 0 && !game.over;
+  if (live) { n.setAttribute('role', 'button'); n.setAttribute('tabindex', '0'); } else { n.removeAttribute('role'); n.removeAttribute('tabindex'); }
+  if (live && game.sel === s.i) n.setAttribute('data-sel', '1'); else n.removeAttribute('data-sel');
+  n.append(el('span', { class: 'pos', text: s.pos }));
+  if (s.state === 0) {
+    if (s.clue) n.append(el('span', { class: 'hint', text: (s.num != null ? '#' + s.num + ' · ' : '') + P[s.p][1] }), el('span', { class: 'side' }, el('span', { class: 'mark', text: '½' })));
+    else n.append(el('span', { class: 'blank' }));
+    n.setAttribute('aria-label', (POSWORD[s.pos] || s.pos) + (s.clue ? ', not named yet, clue taken' : ', not named yet. Select to ask for a clue.'));
+    return;
+  }
+  n.removeAttribute('aria-label');
+  const aka = game.over ? nickShown(s.p) : '';
+  n.append(el('span', { class: 'nm' }, jerseyEl(s, s.state !== 3), el('span', null, P[s.p][0], aka ? el('span', { class: 'aka', text: '“' + aka + '”' }) : null)));
+  const side = el('span', { class: 'side' });
+  if (game.over && s.i < 22) side.append(el('span', { class: 'num', title: 'Share of the team\'s snaps', text: s.pct + '%' }));
+  side.append(el('span', { class: 'mark', text: s.state === 1 ? '✓' : s.state === 2 ? '½' : '✕' }), el('span', { class: 'vh', text: s.state === 1 ? 'named' : s.state === 2 ? 'named with a clue' : 'missed' }));
+  n.append(side);
+}
+function paintAll() {
+  game.slots.forEach(function (s) { paintSlot(s); });
+  Array.prototype.forEach.call($('pChart').querySelectorAll('.slots'), function (u) { if (game.over) u.setAttribute('data-over', '1'); else u.removeAttribute('data-over'); });
+  if (fieldApi) fieldApi.paintAll();
+  paintCounts();
+}
+function paintCounts() {
+  const st = gameStats(game);
+  $('pCount').textContent = pad2(st.found) + '/' + pad2(st.total);
+  (game.cnts || []).forEach(function (c) {
+    c.node.textContent = c.ss.filter(function (s) { return s.state === 1 || s.state === 2; }).length + '/' + c.ss.length;
+  });
+  paintMeter($('pMeter'), game);
+}
+function setFb(kind, text) { const f = $('pFb'); f.textContent = text; if (kind) f.dataset.k = kind; else f.removeAttribute('data-k'); }
+function goalText() { const nx = nextUp(game); return nx ? nx.need + ' more for ' + nx.tier[1] : ''; }
+function idleFb() { setFb('', goalText()); }
+function clearSel() {
+  if (!game) return;
+  const old = game.sel;
+  game.sel = -1; $('pClueBtn').hidden = true;
+  if (fieldApi && fieldApi.sel >= 0) fieldApi.select(-1);
+  if (old >= 0) paintSlot(game.slots[old]);
+}
+function saveLive() { if (game && game.daily && !game.over) { save.live = packGame(game); persist(); } }
+function openSlots() { return game.slots.filter(function (s) { return s.inPlay && s.state === 0; }); }
+function findHits(raw, loose) {
+  const k = typedKey(raw);
+  if (!k || (k.length < 2 && !loose)) return [];
+  const open = openSlots();
+  let hits = open.filter(function (s) { return s.keys.indexOf(k) >= 0 || (loose && s.enter.indexOf(k) >= 0); });
+  if (hits.length || !loose) return hits;
+  let best = 3; hits = [];
+  open.forEach(function (s) {
+    s.keys.forEach(function (key) {
+      const allow = key.length >= 8 ? 2 : key.length >= 5 ? 1 : 0;
+      if (!allow) return;
+      const d = editDist(k, key, allow);
+      if (d > allow) return;
+      if (d < best) { best = d; hits = [s]; } else if (d === best && hits.indexOf(s) < 0) hits.push(s);
+    });
+  });
+  return hits;
+}
+function swallow(raw) {
+  const tl = game.tail, cur = typedKey(raw);
+  if (!tl || !cur) return false;
+  const whole = tl.pre + cur;
+  if (!tl.keys.some(function (k) { return k.indexOf(whole) === 0; })) { game.tail = null; return false; }
+  if (tl.keys.indexOf(whole) >= 0) { $('pInput').value = ''; game.tail = null; }
+  return true;
+}
+function accept(hits, typed) {
+  clearSel();
+  game.tail = typed ? { pre: typed, keys: [].concat.apply([], hits.map(function (s) { return s.keys; })) } : null;
+  hits.forEach(function (s) { s.state = s.clue ? 2 : 1; paintSlot(s, true); fieldApi.paint(s.i, true); });
+  $('pInput').value = '';
+  paintCounts(); saveLive();
+  const goal = goalText();
+  setFb('hit', '✓ ' + hits.map(function (s) { return P[s.p][0] + ', ' + s.pos; }).join(' · ') + (goal && hits.length === 1 ? ' · ' + goal : ''));
+  if (!openSlots().length) finish('sweep');
+}
+function onType() {
+  if (!game || game.over) return;
+  const raw = $('pInput').value;
+  if (swallow(raw)) return;
+  const hits = findHits(raw, false);
+  if (hits.length) accept(hits, typedKey(raw));
+}
+function onEnter() {
+  if (!game || game.over) return;
+  const inp = $('pInput'), raw = inp.value.trim();
+  if (!raw) return;
+  const k = typedKey(raw);
+  if (game.tail) { const done = game.tail.keys.indexOf(game.tail.pre + k) >= 0; game.tail = null; if (done) { inp.value = ''; return; } }
+  const hits = findHits(raw, true);
+  if (hits.length) return accept(hits, k);
+  clearSel();
+  const had = game.slots.filter(function (s) { return s.inPlay && s.state !== 0 && (s.keys.indexOf(k) >= 0 || s.enter.indexOf(k) >= 0); })[0];
+  if (had) setFb('', 'Already have ' + P[had.p][0] + '.');
+  else setFb('miss', '✕ No “' + raw + '” in this lineup.');
+  inp.select();
+}
+function takeClue(s) {
+  if (game.over || s.state !== 0 || s.clue) return;
+  clearSel();
+  s.clue = true; paintSlot(s); fieldApi.paint(s.i, true); saveLive();
+  setFb('clue', clueText(s) + ' Half credit now.');
+  try { $('pInput').focus({ preventScroll: true }); } catch (e) {}
+}
+function onPick(i) {
+  const s = game.slots[i];
+  if (!s.inPlay) return;
+  if (game.over) {
+    fieldApi.select(i);
+    const aka = nickShown(s.p);
+    $('pCap').textContent = (s.num != null ? '#' + s.num + ' ' : '') + P[s.p][0] + (aka ? ' “' + aka + '”' : '') + ' · ' + s.pos + (s.i < 22 ? ' · ' + s.pct + '% of snaps' : '') + ' · ' + (s.state === 1 ? 'named' : s.state === 2 ? 'named with a clue' : 'missed');
+    return;
+  }
+  const old = game.sel;
+  $('pClueBtn').hidden = true; game.sel = -1;
+  fieldApi.select(i);
+  if (s.state === 0 && !s.clue) { game.sel = i; setFb('', 'Open spot: ' + (POSWORD[s.pos] || s.pos) + '.'); $('pClueBtn').hidden = false; }
+  else if (s.state === 0) setFb('clue', clueText(s));
+  else setFb('hit', '✓ ' + P[s.p][0] + ', ' + s.pos);
+  if (old >= 0 && old !== i) paintSlot(game.slots[old]);
+  paintSlot(s);
+}
+function settle(g, reason) {
+  g.over = true; g.reason = reason;
+  g.slots.forEach(function (s) { if (s.inPlay && s.state === 0) s.state = 3; });
+  let mask = save.known[g.key] || 0;
+  g.slots.forEach(function (s) { if (s.state === 1 || s.state === 2) mask |= (1 << s.i); });
+  if (mask) save.known[g.key] = mask;
+  if (g.daily) { save.daily[g.daily] = packGame(g); save.live = null; }
+  persist();
+}
+function finish(reason) {
+  if (!game || game.over) return;
+  clearInterval(tick);
+  clearSel();
+  settle(game, reason);
+  try { $('pInput').blur(); } catch (e) {}
+  paintAll(); showResult();
+  window.scrollTo(0, 0);
+}
+function showResult() {
+  const st = gameStats(game), tier = tierFor(st.pct);
+  $('pEntry').hidden = true; $('pConfirm').hidden = true; $('pClueBtn').hidden = true; $('pQuit').hidden = true; setFb('', ''); $('pBar').setAttribute('data-over', '1');
+  const c = $('pClock'); c.dataset.t = '';
+  setClock('Final', true); c.removeAttribute('data-low');
+  $('rWhy').textContent = game.reason === 'sweep' ? 'Final · Clean sweep' : game.reason === 'time' ? 'Final · Clock ran out' : 'Final';
+  $('rTier').textContent = tier[1];
+  $('rLine').textContent = st.found + ' of ' + st.total + ' named' + (st.clued ? ', ' + st.clued + ' with a clue' : '') + '. ' + tier[2];
+  $('rShare').textContent = shareText(game); $('rShare').hidden = true;
+  $('rNext').textContent = game.daily ? 'Play another lineup' : 'Another lineup';
+  $('pCap').textContent = 'Tap anyone on the field to see who it was.';
+  $('pResult').hidden = false;
+  setPView('list');
+}
+function randomKey() {
+  const fresh = ALL_KEYS.filter(function (k) { return !save.known[k]; });
+  return pick(fresh.length ? fresh : ALL_KEYS);
+}
+
+/* ================= side games: four downs, a clue after every miss ================= */
+const DOWNS = ['1st', '2nd', '3rd', '4th'];
+function ordDown(n) { return DOWNS[n - 1] || n + 'th'; }
+function weekLabel(gt, w) { return gt === 'REG' ? 'Week ' + w : gt === 'WC' ? 'Wild Card round' : gt === 'DIV' ? 'Divisional round' : gt === 'CON' ? 'Conference Championship' : gt === 'SB' ? 'Super Bowl' : 'Week ' + w; }
+const PHRASE = { 'CMP/ATT': ['passing', 'passing'], 'PASS YDS': ['pass yard', 'pass yards'], 'PASS TD': ['pass TD', 'pass TD'], 'RUSH YDS': ['rush yard', 'rush yards'], 'RUSH TD': ['rush TD', 'rush TD'],
+  'CAR': ['carry', 'carries'], 'REC': ['catch', 'catches'], 'REC YDS': ['receiving yard', 'receiving yards'], 'REC TD': ['receiving TD', 'receiving TD'], 'SACKS': ['sack', 'sacks'], 'INT': ['INT', 'INT'],
+  'DEF TD': ['defensive TD', 'defensive TD'], 'TKL': ['tackle', 'tackles'], 'FF': ['forced fumble', 'forced fumbles'], 'RETURN TD': ['return TD', 'return TD'] };
+function linePhrase(line) {
+  return line.filter(function (x) { return PHRASE[x[0]] && x[1] !== '0'; }).map(function (x) { return x[1] + ' ' + PHRASE[x[0]][x[1] === '1' ? 0 : 1]; }).join(', ');
+}
+const SEARCH = P.map(function (p, i) {
+  const t = [];
+  const add = function (x) { x = sq(x); if (x && t.indexOf(x) < 0) t.push(x); };
+  namesOf(i).forEach(function (nm) {
+    const w = toks(nm);
+    w.forEach(function (x) { add(x); x.split('-').forEach(add); });
+    if (w.length) (FIRST[sq(w[0])] || []).forEach(add);
+  });
+  return { i: i, t: t, full: typedKey(p[0]), nk: nickKeys(i) };
+});
+function playerSuggest(raw, exclude) {
+  const q = toks(raw).map(sq).filter(Boolean), joined = q.join('');
+  if (joined.length < 2) return null;
+  const via = function (r) { const k = r.nk.filter(function (n) { return n.key.indexOf(joined) === 0; })[0]; return k ? k.label : ''; };
+  const byName = function (r) { return r.full.indexOf(joined) === 0 || q.every(function (x) { return r.t.some(function (t) { return t.indexOf(x) === 0; }); }); };
+  return SEARCH.filter(function (r) { return exclude.indexOf(r.i) < 0 && (byName(r) || via(r)); })
+    .sort(function (a, b) { return STARTS[b.i] - STARTS[a.i] || a.i - b.i; }).slice(0, 6)
+    .map(function (r) { const v = byName(r) ? '' : via(r); return { id: r.i, main: P[r.i][0], meta: (v ? '“' + v + '” · ' : '') + [POS[r.i], P[r.i][1]].filter(Boolean).join(' · ') }; });
+}
+// named games match on their own words, so The Catch and The Catch II stay different answers
+const STOP = { the: 1, a: 1, an: 1, at: 1, 'in': 1, of: 1, to: 1, and: 1 };
+function ntoks(s) {
+  return s.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[.'’`]/g, '').split(/[\s\-–:&]+/).map(sq).filter(function (t) { return t && !STOP[t]; });
+}
+const NSEARCH = NAMED.map(function (g, i) {
+  const names = [g[0]].concat(g[1]), t = [], keys = [];
+  names.forEach(function (nm) { const w = ntoks(nm); keys.push(w.join('')); w.forEach(function (x) { if (t.indexOf(x) < 0) t.push(x); }); });
+  return { i: i, t: t, keys: keys };
+});
+function namedSuggest(raw, exclude) {
+  const q = ntoks(raw), joined = q.join('');
+  if (joined.length < 2) return null;
+  return NSEARCH.filter(function (r) {
+    return exclude.indexOf(r.i) < 0 && (r.keys.some(function (k) { return k.indexOf(joined) === 0; }) || q.every(function (x) { return r.t.some(function (t) { return t.indexOf(x) === 0; }); }));
+  }).sort(function (a, b) { return (b.keys[0].indexOf(joined) === 0) - (a.keys[0].indexOf(joined) === 0) || (NAMED[a.i][0] < NAMED[b.i][0] ? -1 : 1); }).slice(0, 7)
+    .map(function (r) { return { id: r.i, main: NAMED[r.i][0], meta: '' }; });
+}
+function stopsOf(i) {
+  const out = [];
+  PATHS[i][0].split(',').forEach(function (s) {
+    const y = 2000 + +s.slice(0, 2), t = s.slice(2), last = out[out.length - 1];
+    if (last && last.t === t && last.b === y - 1) last.b = y; else out.push({ t: t, a: y, b: y });
+  });
+  return out;
+}
+function teamCount(i) { const o = {}; stopsOf(i).forEach(function (s) { o[s.t] = 1; }); return Object.keys(o).length; }
+// the number on the card: fantasy points, or for a defender the loudest thing he did
+function boomHead(b) {
+  if (b[10] != null) return [b[10].toFixed(1), 'PPR points'];
+  const W = { 'DEF TD': 6, 'INT': 4, 'SACKS': 2.5 };
+  let best = b[12][0], sc = -1;
+  b[12].forEach(function (x) { const s = (W[x[0]] || 0) * parseFloat(x[1]); if (s > sc) { sc = s; best = x; } });
+  const ph = PHRASE[best[0]];
+  return [best[1], ph ? ph[best[1] === '1' ? 0 : 1] : best[0].toLowerCase()];
+}
+function boomWord(b) { return b[9] === 'DEF' ? (POSWORD[POS[b[0]]] || 'defender') : POSWORD[b[9]]; }
+
+const QZ = {
+  jm: {
+    label: 'Journeyman', store: 'jm', title: 'Who is this?', ph: 'Start typing a name', obj: 'him', order: JDAILY,
+    pool: function () { return JPOOL; }, valid: function (t) { return !!PATHS[t]; }, key: function (t) { return t; },
+    suggest: playerSuggest, show: function (id) { return P[id][0]; }, none: 'No lineup regular by that name since 2014.',
+    answer: function (t) { return P[t][0]; }, miss: 'He got around. Now you know.',
+    sub: function (t) { const a = nickShown(t); return a ? 'Also answers to “' + a + '”.' : ''; },
+    tease: function (t) { return an(POSWORD[POS[t]] || 'player') + ' with ' + teamCount(t) + ' teams since 2014.'; },
+    intro: function (t) { return an(POSWORD[POS[t]] || 'player') + ' with ' + teamCount(t) + ' teams since 2014, in the order he wore them.'; },
+    body: function (host, t) {
+      const ol = el('ol', { class: 'route', 'aria-label': 'Teams, in order' });
+      stopsOf(t).forEach(function (s) {
+        const tm = teamAt(s.t, s.a);
+        ol.append(el('li', null, el('span', { class: 'dot', 'aria-hidden': 'true' }, el('i', { bg: tm.c1 }), el('i', { bg: tm.c2 })),
+          el('span', { class: 'tn', text: tm.short }), el('span', { class: 'yrs num', text: s.a === s.b ? String(s.a) : s.a + '–' + String(s.b).slice(2) })));
+      });
+      host.append(ol);
+    },
+    clues: function (t) {
+      const p = P[t];
+      let draft;
+      if (p[3]) { const dt = T[p[5]] ? teamAt(p[5], p[2]) : null; draft = p[2] + ', round ' + p[3] + ', pick ' + p[4] + ' overall' + (dt ? ', by ' + dt.the : ''); }
+      else draft = 'Undrafted. Came into the league in ' + p[2] + '.';
+      const big = JMBIG[t], nums = JERSEYS[t].map(function (n) { return '#' + n; });
+      const third = big ? ['Big day', big[0] + ', ' + weekLabel(big[2], big[1]) + ', against ' + teamAt(big[4], big[0]).the + ': ' + linePhrase(big[7]) + (big[6] != null ? ' (' + big[6].toFixed(1) + ' PPR)' : '') + '.']
+        : ['Numbers', nums.length ? 'Wore ' + joinNice(nums) : 'Not on file'];
+      return [['College', p[1] || 'Not on file'], ['Draft', draft], third];
+    }
+  },
+  boom: {
+    label: 'Box Score', store: 'boom', title: 'Who went off?', ph: 'Start typing a name', obj: 'him', order: BDAILY,
+    pool: function () { return range(BOOM.length); }, valid: function (t) { return !!BOOM[t]; }, key: function (t) { return BOOM[t][0]; },
+    suggest: playerSuggest, show: function (id) { return P[id][0]; }, none: 'Nobody by that name in the books since 2014.',
+    answer: function (t) { return P[BOOM[t][0]][0]; }, miss: 'A day like that and he still got past you.',
+    sub: function (t) { const b = BOOM[t], tm = teamAt(b[4], b[1]); return b[1] + ', ' + weekLabel(b[3], b[2]) + '. ' + tm.full + ' ' + b[7] + ', ' + teamAt(b[5], b[1]).short + ' ' + b[8] + '.'; },
+    tease: function (t) { const b = BOOM[t], h = boomHead(b); return an(boomWord(b)) + (b[10] != null ? ' put up ' + h[0] + ' PPR in ' : ' had ' + h[0] + ' ' + h[1] + ' in ') + b[1] + '.'; },
+    intro: function (t) { return an(boomWord(BOOM[t])) + ' did this.'; },
+    body: function (host, t) {
+      const b = BOOM[t], head = boomHead(b);
+      const tiles = el('div', { class: 'tiles' });
+      b[12].forEach(function (x) { tiles.append(el('div', { class: 'tile' }, el('span', { class: 'v num', text: x[1] }), el('span', { class: 'k', text: x[0] }))); });
+      host.append(el('div', { class: 'box' },
+        el('div', { class: 'box-top' }, el('div', null, el('div', { class: 'eyebrow', text: b[1] + ' season' }), el('div', { class: 'when', text: weekLabel(b[3], b[2]) })),
+          b[10] != null ? el('div', { class: 'pts' }, el('span', { class: 'v num', text: head[0] }), el('span', { class: 'eyebrow', text: head[1] })) : null),
+        tiles));
+    },
+    clues: function (t) {
+      const b = BOOM[t], opp = teamAt(b[5], b[1]), res = b[7] > b[8] ? 'a ' + b[7] + '–' + b[8] + ' win' : b[7] < b[8] ? 'a ' + b[8] + '–' + b[7] + ' loss' : 'a ' + b[7] + '–' + b[8] + ' tie';
+      return [['Opponent', (b[3] === 'SB' ? 'Against ' : b[6] ? 'At home against ' : 'On the road against ') + opp.the + ', ' + res + '.'],
+        ['Team', teamAt(b[4], b[1]).full], ['Number', (b[11] != null ? '#' + b[11] + ' · ' : '') + (P[b[0]][1] || 'College not on file')]];
+    }
+  },
+  named: {
+    label: 'Name That Game', store: 'named', title: 'Name that game', ph: 'Start typing what it is called', obj: 'it', order: NDAILY,
+    pool: function () { return range(NAMED.length); }, valid: function (t) { return !!NAMED[t]; }, key: function (t) { return t; },
+    suggest: namedSuggest, show: function (id) { return NAMED[id][0]; }, none: 'Nothing in the book by that name. Try another word from it.',
+    answer: function (t) { return NAMED[t][0]; }, miss: 'Now you know what to call it.',
+    sub: function (t) { return NAMED[t][4] + '. ' + NAMED[t][5] + '.'; },
+    tease: function (t) { const w = NAMED[t][2].split(' · '); return w[0] + ', ' + (w[1] === 'Regular season' ? 'regular season' : w[1]) + '.'; },
+    intro: function () { return 'It is famous enough to have a name. What do people call it?'; },
+    body: function (host, t) { host.append(el('div', { class: 'box' }, el('div', { class: 'eyebrow', text: NAMED[t][2] }), el('p', { class: 'tease', text: NAMED[t][3] }))); },
+    clues: function (t) { return [['Matchup', NAMED[t][4]], ['Final', NAMED[t][5]], ['Names', NAMED[t][6]]]; }
+  }
+};
+function qDaily(type, n) { const o = QZ[type].order; return o[mod(n - 1, o.length)]; }
+let quiz = null, sugg = [], suggOn = 0;
+function startQuiz(type, t, daily, restore) {
+  const cfg = QZ[type];
+  quiz = { type: type, t: t, daily: daily || 0, guesses: restore && restore.g ? restore.g.slice() : [], over: restore ? !!restore.over : false, won: restore ? !!restore.won : false };
+  if (!quiz.won && quiz.guesses.length >= 4) quiz.over = true;
+  $('qMeta').textContent = cfg.label + (quiz.daily ? ' · Daily no. ' + quiz.daily : ' · Free play');
+  $('qTitle').textContent = cfg.title;
+  $('qIntro').textContent = cfg.intro(t);
+  const body = $('qBody'); body.textContent = ''; cfg.body(body, t);
+  const inp = $('qInput'); inp.value = ''; inp.placeholder = cfg.ph;
+  closeSugg(); $('qFb').textContent = '';
+  paintQuiz(); show('quiz');
+  if (!quiz.over) { try { inp.focus({ preventScroll: true }); } catch (e) {} }
+}
+function quizShare(q) {
+  const cfg = QZ[q.type], n = q.guesses.length, right = cfg.key(q.t);
+  const sqs = q.guesses.map(function (g) { return g === right ? '🟩' : '🟥'; }).join('');
+  return 'Ball Knowledge · ' + cfg.label + (q.daily ? ' no. ' + q.daily : ': ' + cfg.answer(q.t)) + '\n' + (q.won ? 'Got ' + cfg.obj + ' on ' + ordDown(n) + ' down' : 'Turnover on downs') + '\n' + sqs + (SITE ? '\n' + SITE : '');
+}
+function paintQuiz() {
+  const cfg = QZ[quiz.type], n = quiz.guesses.length, misses = quiz.won ? n - 1 : n, right = cfg.key(quiz.t);
+  $('qDown').textContent = quiz.over ? (quiz.won ? 'Got ' + cfg.obj : 'Turnover on downs') : DOWNS[Math.min(n, 3)] + ' down';
+  const pips = $('qPips'); pips.textContent = '';
+  for (let k = 0; k < 4; k++) pips.append(el('i', { 'data-s': k < n ? (quiz.won && k === n - 1 ? 'o' : 'x') : (k === n && !quiz.over ? 'now' : null) }));
+  pips.setAttribute('aria-label', n + ' of 4 downs used');
+  // only the clues that are open; the rest stay out of sight until a miss earns them
+  const ul = $('qClues'); ul.textContent = '';
+  cfg.clues(quiz.t).forEach(function (c, k) {
+    if (quiz.over || misses > k) ul.append(el('li', null, el('span', { class: 'eyebrow', text: c[0] }), el('span', { text: c[1] })));
+  });
+  ul.hidden = !ul.firstChild;
+  const nx = $('qNextClue'); nx.hidden = quiz.over || misses >= 3;
+  nx.textContent = misses ? 'Another miss opens another clue.' : 'Four downs. A miss opens a clue.';
+  const tried = $('qTried'); tried.textContent = '';
+  quiz.guesses.forEach(function (g) { if (g !== right) tried.append(el('li', null, el('b', { text: '✕' }), cfg.show(g))); });
+  $('qInput').hidden = quiz.over; $('qFb').hidden = quiz.over;
+  $('qResult').hidden = !quiz.over;
+  if (quiz.over) {
+    $('qWhy').textContent = quiz.won ? 'Got ' + cfg.obj + ' on ' + ordDown(n) + ' down' : 'Turnover on downs';
+    $('qName').textContent = cfg.answer(quiz.t);
+    const sub = cfg.sub(quiz.t); $('qSub').textContent = sub; $('qSub').hidden = !sub;
+    $('qShare').textContent = quizShare(quiz); $('qShare').hidden = true;
+  }
+}
+function guessQuiz(id) {
+  if (!quiz || quiz.over || quiz.guesses.indexOf(id) >= 0) return;
+  const cfg = QZ[quiz.type];
+  quiz.guesses.push(id);
+  if (id === cfg.key(quiz.t)) { quiz.over = true; quiz.won = true; }
+  else if (quiz.guesses.length >= 4) quiz.over = true;
+  if (quiz.daily) { save[cfg.store][quiz.daily] = { t: quiz.t, g: quiz.guesses.slice(), over: quiz.over, won: quiz.won }; persist(); }
+  $('qInput').value = ''; closeSugg();
+  $('qFb').textContent = quiz.over ? '' : 'Not ' + cfg.show(id) + '.';
+  paintQuiz();
+  if (quiz.over) { try { $('qInput').blur(); } catch (e) {} }
+}
+function closeSugg() { sugg = []; suggOn = 0; const u = $('qSugg'); u.hidden = true; u.textContent = ''; }
+function onQuizType() {
+  if (!quiz || quiz.over) return;
+  const cfg = QZ[quiz.type], res = cfg.suggest($('qInput').value, quiz.guesses);
+  if (res === null) { closeSugg(); $('qFb').textContent = ''; return; }
+  sugg = res; suggOn = 0;
+  const u = $('qSugg'); u.textContent = '';
+  sugg.forEach(function (r, n) {
+    u.append(el('li', null, el('button', { type: 'button', 'data-on': n === 0 ? '1' : null, onclick: function () { guessQuiz(r.id); } },
+      el('span', { text: r.main }), r.meta ? el('span', { class: 'meta', text: r.meta }) : null)));
+  });
+  u.hidden = !sugg.length;
+  $('qFb').textContent = sugg.length ? '' : cfg.none;
+}
+function moveSugg(d) {
+  if (!sugg.length) return;
+  suggOn = mod(suggOn + d, sugg.length);
+  Array.prototype.forEach.call($('qSugg').querySelectorAll('button'), function (b, n) { if (n === suggOn) b.setAttribute('data-on', '1'); else b.removeAttribute('data-on'); });
+}
+
+/* ================= today ================= */
+function sideRow(type, n) {
+  const cfg = QZ[type];
+  const t = qDaily(type, n), sv0 = save[cfg.store][n], st = sv0 && cfg.valid(sv0.t != null ? sv0.t : sv0.i) ? sv0 : null;
+  const tt = st ? (st.t != null ? st.t : st.i) : t, g = (st && st.g) || [];
+  const done = !!st && (!!st.over || g.length >= 4);
+  const desc = done ? cfg.answer(tt) + '. ' + (st.won ? 'Got ' + cfg.obj + ' on ' + ordDown(g.length) + ' down.' : 'Turnover on downs.')
+    : g.length ? DOWNS[Math.min(g.length, 3)] + ' down. Pick it back up.' : cfg.tease(t);
+  return el('button', { class: 'rowlink', type: 'button', id: 'btn-' + type, 'data-s': done ? (st.won ? 'won' : 'lost') : null,
+    onclick: function () { startQuiz(type, tt, n, st ? { g: g, over: done, won: !!st.won } : null); } },
+    el('span', { class: 't', text: cfg.label }), el('span', { class: 'go', 'aria-hidden': 'true', text: done ? (st.won ? '✓' : '✕') : '›' }), el('span', { class: 'd', text: desc }));
+}
+function renderHome() {
+  const n = dayNo(), date = todayText();
+  const dc = $('dailyCard'); dc.textContent = '';
+  const fig = el('figure', { class: 'field' }), body = el('div', { class: 'daily-body' });
+  dc.append(fig, body);
+  body.append(el('div', { class: 'eyebrow', text: 'Daily lineup · No. ' + n + (date ? ' · ' + date : '') }));
+  const done = save.daily[n], live = save.live && save.live.daily === n && !save.live.over ? save.live : null;
+  if (done && L[done.key]) {
+    const g = newGame(done.key, { unit: 'all', timed: true, daily: n, restore: done }), st = gameStats(g);
+    makeField(fig, g.slots, { team: teamAt(keyTeam(done.key), keyYear(done.key)), label: 'Your daily result, drawn as a formation' });
+    body.append(el('h2', { text: keyLabel(done.key) }), el('p', { text: st.found + '/' + st.total + ' · ' + tierFor(st.pct)[1] + '. A new team lands tomorrow.' }));
+    const b = el('button', { class: 'btn primary', type: 'button', onclick: function () { copyText(shareText(g), b); } }, 'Copy result');
+    body.append(el('div', { class: 'cta' }, b, el('button', { class: 'btn', type: 'button', onclick: function () { startLineup(done.key, { daily: n, restore: done }); } }, 'See the answers')));
+  } else {
+    makeField(fig, GHOST, { ghost: true, label: 'Eleven on offense and eleven on defense, waiting to be named' });
+    if (live) {
+      body.append(el('h2', { text: keyLabel(live.key) }), el('p', { text: 'You are mid-round and the clock is still running.' }),
+        el('div', { class: 'cta' }, el('button', { class: 'btn primary kick', type: 'button', id: 'btnDaily', onclick: function () { startLineup(live.key, { daily: n, restore: live }); } }, 'Get back in')));
+    } else {
+      body.append(el('h2', { text: 'One team. One season. Same for everybody.' }), el('p', { text: '24 names, five minutes. The team stays hidden until you kick off.' }),
+        el('div', { class: 'cta' }, el('button', { class: 'btn primary kick', type: 'button', id: 'btnDaily', onclick: function () { startLineup(dailyKey(n), { daily: n }); } }, 'Kick off')));
+    }
+  }
+  const rows = $('sideRows'); rows.textContent = '';
+  ['jm', 'boom', 'named'].forEach(function (type) { rows.append(sideRow(type, n)); });
+  renderBoard();
+}
+function levelOf(mask) { const c = bits(mask || 0); return c === 0 ? 0 : c >= 24 ? 4 : c >= 16 ? 3 : c >= 8 ? 2 : 1; }
+function renderTicket() {
+  const t = $('selTeam').value, y = +$('selYear').value, tm = teamAt(t, y), c = bits(save.known[y + t] || 0);
+  const sub = (c === 0 ? 'Untouched. All 24 are waiting.' : c >= 24 ? 'All 24 named. Run it back.' : c + ' of 24 named so far.') + (y === Y1 ? ' Season in progress.' : '');
+  ['', '2'].forEach(function (x) {
+    $('tkA' + x).style.background = tm.c1; $('tkB' + x).style.background = tm.c2;
+    $('tkName' + x).textContent = y + ' ' + tm.full; $('tkSub' + x).textContent = sub;
+  });
+}
+function renderBoard() {
+  const host = $('board'); host.textContent = '';
+  const selT = $('selTeam').value, selY = +$('selYear').value;
+  let played = 0, names = 0;
+  [DIVS.slice(0, 4), DIVS.slice(4)].forEach(function (conf) {
+    const b = el('div', { class: 'board' });
+    host.append(b);
+    b.append(el('span'));
+    YEARS.forEach(function (y) { b.append(el('span', { class: 'yr num', text: String(y).slice(2) })); });
+    conf.forEach(function (dv) {
+      b.append(el('span', { class: 'dv eyebrow', text: dv[0] }));
+      dv[1].forEach(function (t) {
+        b.append(el('span', { class: 'tm', text: t }));
+        YEARS.forEach(function (y) {
+          const k = y + t, m = save.known[k] || 0, c = bits(m);
+          if (c) { played++; names += c; }
+          b.append(el('button', { class: 'cell', type: 'button', 'data-l': String(levelOf(m)), 'aria-pressed': t === selT && y === selY ? 'true' : 'false',
+            'aria-label': keyLabel(k) + ': ' + c + ' of 24 named', title: keyLabel(k) + ' · ' + c + '/24',
+            onclick: function () { $('selTeam').value = t; $('selYear').value = String(y); renderBoard(); const c = $('board').querySelector('[aria-pressed="true"]'); if (c) c.focus({ preventScroll: true }); } }, el('i')));
+        });
+      });
+    });
+  });
+  $('boardSum').textContent = played
+    ? played + ' of ' + ALL_KEYS.length + ' lineups touched, ' + names.toLocaleString('en-US') + ' of ' + (ALL_KEYS.length * 24).toLocaleString('en-US') + ' names on the board.'
+    : 'Every square is one team in one season. Name players and the square fills in.';
+  const lg = $('legend');
+  if (!lg.firstChild) [['0', 'None yet'], ['1', '1 to 7'], ['2', '8 to 15'], ['3', '16 to 23'], ['4', 'All 24']].forEach(function (x) {
+    lg.append(el('span', null, el('span', { class: 'cell', 'data-l': x[0], 'aria-hidden': 'true' }, el('i')), x[1]));
+  });
+  renderTicket();
+}
+function buildPicker() {
+  const st = $('selTeam'), sy = $('selYear');
+  DIVS.forEach(function (dv) {
+    const og = el('optgroup', { label: dv[0] });
+    dv[1].map(function (t) { return [t, T[t][0] + ' ' + T[t][1]]; }).sort(function (a, b) { return a[1] < b[1] ? -1 : 1; })
+      .forEach(function (x) { og.append(el('option', { value: x[0], text: x[1] })); });
+    st.append(og);
+  });
+  YEARS.slice().reverse().forEach(function (y) { sy.append(el('option', { value: String(y), text: y === Y1 ? y + ' (so far)' : String(y) })); });
+  // a friend's link can carry a bare anchor like #jax-2017
+  const h = /^#?([a-z]{2,3})-?(\d{4})$/i.exec(location.hash || '');
+  const k0 = dailyKey(dayNo() + 200);
+  let t0 = keyTeam(k0), y0 = keyYear(k0);
+  if (h && T[h[1].toUpperCase()] && +h[2] >= Y0 && +h[2] <= Y1) { t0 = h[1].toUpperCase(); y0 = +h[2]; }
+  st.value = t0; sy.value = String(y0);
+  st.addEventListener('change', renderBoard); sy.addEventListener('change', renderBoard);
+}
+function pickOpts() {
+  const unit = $('unitOff').checked ? 'off' : $('unitDef').checked ? 'def' : 'all';
+  return { unit: unit, timed: $('chkClock').checked };
+}
+
+/* ================= wiring ================= */
+function goPage(p) { clearInterval(tick); renderHome(); show(p); }
+function goHome() { goPage('today'); }
+function askQuit() { $('pConfirm').hidden = false; $('pEntry').hidden = true; clearSel(); $('pQuitNo').focus(); }
+function chosenKey() { return $('selYear').value + $('selTeam').value; }
+$('navHome').addEventListener('click', function () { if (view === 'play' && game && !game.over) askQuit(); else goHome(); });
+Array.prototype.forEach.call(document.querySelectorAll('.nav button'), function (b) {
+  b.addEventListener('click', function () { if (view === 'play' && game && !game.over) askQuit(); else goPage(b.dataset.go); });
+});
+$('pickForm').addEventListener('submit', function (e) { e.preventDefault(); startLineup(chosenKey(), pickOpts()); });
+$('btnRandom').addEventListener('click', function () { startLineup(randomKey(), pickOpts()); });
+$('bPlay').addEventListener('click', function () { startLineup(chosenKey(), pickOpts()); });
+$('viewField').addEventListener('change', function () { setPView('field'); });
+$('viewList').addEventListener('change', function () { setPView('list'); });
+$('pInput').addEventListener('input', onType);
+$('pInput').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); onEnter(); } });
+$('pQuit').addEventListener('click', askQuit);
+$('pQuitNo').addEventListener('click', function () { $('pConfirm').hidden = true; $('pEntry').hidden = false; $('pInput').focus(); });
+$('pQuitYes').addEventListener('click', function () { finish('quit'); });
+$('pClueBtn').addEventListener('click', function () { if (game && game.sel >= 0) takeClue(game.slots[game.sel]); });
+$('rCopy').addEventListener('click', function () { copyText($('rShare').textContent, $('rCopy'), $('rShare')); });
+$('rNext').addEventListener('click', function () { startLineup(randomKey(), { unit: game.unit, timed: game.timed }); });
+$('rHome').addEventListener('click', goHome);
+$('qHome').addEventListener('click', goHome);
+$('qBack').addEventListener('click', goHome);
+$('qNext').addEventListener('click', function () { startQuiz(quiz.type, pick(QZ[quiz.type].pool()), 0); });
+$('qCopy').addEventListener('click', function () { copyText($('qShare').textContent, $('qCopy'), $('qShare')); });
+$('qInput').addEventListener('input', onQuizType);
+$('qInput').addEventListener('keydown', function (e) {
+  if (e.key === 'ArrowDown') { e.preventDefault(); moveSugg(1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); moveSugg(-1); }
+  else if (e.key === 'Enter') { e.preventDefault(); if (sugg.length) guessQuiz(sugg[suggOn].id); }
+});
+
+function start(data) {
+  data = data || {};
+  buildPicker();
+  // settle a daily round whose clock ran out while the page was closed, and drop stale ones
+  const n = dayNo();
+  if (save.live) {
+    if (save.live.daily !== n || !L[save.live.key]) { save.live = null; persist(); }
+    else if (save.live.endAt && Date.now() >= save.live.endAt) settle(newGame(save.live.key, { daily: n, restore: save.live }), 'time');
+  }
+  renderHome();
+  const dq = data.quiz;
+  if (data.game && L[data.game.key]) startLineup(data.game.key, { unit: data.game.unit, timed: data.game.timed, daily: data.game.daily, restore: data.game });
+  else if (dq && QZ[dq.type] && QZ[dq.type].valid(dq.t)) startQuiz(dq.type, dq.t, dq.daily, { g: dq.guesses || [], over: dq.over, won: dq.won });
+  else show('today');
+}
+const hot = window.claude && window.claude.hot;
+try {
+  if (hot && hot.snapshot) hot.snapshot(function () {
+    if (view === 'play' && game) return { game: packGame(game) };
+    if (view === 'quiz' && quiz) return { quiz: { type: quiz.type, t: quiz.t, daily: quiz.daily, guesses: quiz.guesses, over: quiz.over, won: quiz.won } };
+    return {};
+  });
+} catch (e) {}
+if (hot && hot.ready) hot.ready(start); else start((hot && hot.data) || {});
+})();
+</script>

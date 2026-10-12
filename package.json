@@ -1,0 +1,11 @@
+{
+  "name": "ball-knowledge",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Name the players who were actually on the field. Every NFL team, every season since 2014.",
+  "scripts": {
+    "build": "node scripts/assemble.mjs",
+    "data": "bash data/fetch.sh && python3 data/build.py data/raw data/data.json data/nicknames.py data/named.py"
+  }
+}
