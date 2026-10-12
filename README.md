@@ -18,6 +18,8 @@ npx serve public     # or open public/index.html
 
 The whole site is one static page. `scripts/assemble.mjs` joins `src/page.html` (markup, styles, game code) with `data/data.json` and adds the document head. On Vercel the production address is stamped in automatically, so link previews and copied results carry it. Elsewhere, set `SITE_URL=https://your.site` when building.
 
+It runs from any static host, including a subfolder such as GitHub Pages (`SITE_URL=https://you.github.io/ball-knowledge npm run build`, then publish `public/`).
+
 Scores and progress are saved in each visitor's own browser. There is no server and no account.
 
 ## The data

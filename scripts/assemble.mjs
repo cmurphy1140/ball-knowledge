@@ -32,7 +32,7 @@ const html = `<!doctype html>
 <meta name="description" content="${desc}">
 <meta name="theme-color" content="#14171C" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#F3F4F0" media="(prefers-color-scheme: light)">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Ball Knowledge">
 <meta property="og:description" content="${desc}">
