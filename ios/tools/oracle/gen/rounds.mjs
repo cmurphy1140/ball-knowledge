@@ -29,7 +29,7 @@ function weighted(r, options) {
 }
 
 /* ---------- opening a round ---------- */
-async function openDaily(ctx, key, o) {
+export async function openDaily(ctx, key, o) {
   o = o || {};
   const n = ctx.order.indexOf(key) + 1;
   const ms = dayMs(o.tz || 'America/New_York', n, o.hh == null ? ctx.r.between(6, 21) : o.hh, o.mm == null ? ctx.r.between(0, 59) : o.mm, o.ss == null ? ctx.r.between(0, 59) : o.ss);
@@ -40,7 +40,7 @@ async function openDaily(ctx, key, o) {
   assert(d.game.key === key && d.game.daily === n && d.game.unit === 'all' && d.game.timed, 'kick off started the daily');
   return d;
 }
-async function openFree(ctx, key, unit, timed, o) {
+export async function openFree(ctx, key, unit, timed, o) {
   o = o || {};
   const ms = dayMs(o.tz || 'America/New_York', o.day || ctx.r.between(3, 380), ctx.r.between(6, 22), ctx.r.between(0, 59), ctx.r.between(0, 59));
   const d = await Drv.open(ctx, { ms: ms, tz: o.tz, storage: o.storage, detail: o.detail });
@@ -59,7 +59,7 @@ function attempt(d, i, text) {
   const st = d.state(i);
   return { hit: before === 0 && (st === 1 || st === 2), whole: sent === text };
 }
-function nameSlot(d, i, o) {
+export function nameSlot(d, i, o) {
   o = o || {};
   const r = d.r, f = F.forms(d.bk, d.game.slots[i].p);
   const options = [['last', 5], ['full', 2]];
@@ -95,7 +95,7 @@ function nameSlot(d, i, o) {
   return hit;
 }
 // the surest way to fill a spot: his longest key, letter by letter, then Enter if something got in the way
-function sure(d, i) {
+export function sure(d, i) {
   const s = d.game.slots[i];
   if (s.state !== 0) return true;
   const key = s.keys.slice().sort((a, b) => b.length - a.length)[0];
@@ -134,7 +134,7 @@ function runDown(d) {
   [31000, 30250, 30000, 29750, 10000, 1000, 250, 0].forEach((ms) => d.tickAtLeft(ms));
   assert(d.over && d.game.reason === 'time', 'the clock ran out');
 }
-function endRound(d, ending) {
+export function endRound(d, ending) {
   if (d.over) return;
   if (ending === 'quit') { if (d.prev.confirm === false) d.quit(); d.pass(700); d.show(); }
   else if (ending === 'time') runDown(d);
@@ -389,7 +389,7 @@ S.picks = async function (ctx, c, v) {
   d.pick(a, 'field');
   assert(d.prev.fbk === 'hit' && d.prev.sel === -1 && d.prev.fsel === a, 'a named spot says who it is');
   d.pick(a, 'list');
-  if (unit !== 'all') { const off = sl.filter((s) => !F.inUnit(s.i, unit)).map((s) => s.i); const before = JSON.stringify(d.prev); d.pick(r.pick(off), 'field'); assert(JSON.stringify(d.prev) === before, 'a spot outside the unit does nothing'); }
+  if (unit !== 'all') { const off = sl.filter((s) => !F.inUnit(s.i, unit)).map((s) => s.i); if (d.prev.list) d.view('field'); const before = JSON.stringify(d.prev); d.pick(r.pick(off), 'field'); assert(JSON.stringify(d.prev) === before, 'a spot outside the unit does nothing'); }
   d.pick(f, 'field');
   d.wait(500); d.type('zzyzx'); d.enter();
   assert(d.prev.fbk === 'miss' && d.prev.sel === -1 && !d.prev.clueBtn, 'a miss clears the selection');
@@ -598,7 +598,7 @@ S.restore = async function (ctx, c, v) {
     afterOver(d, { then: 0 });
   } else if (v.mode === 'between') {
     await d.reload(20000);
-    d.pass(d.left() + 90000);
+    d.pass(endAt - d.now + 90000);
     d.daily();
     assert(d.prev.over && d.prev.reason === 'time' && d.prev.st === st.replace(/0/g, '3'), 'the clock ran out on the home page');
     d.tag('expiredBeforeGetBackIn');
@@ -1001,11 +1001,11 @@ export async function genRounds() {
     { key: '2015WAS', city: '2015 Washington', meta: '', label: '2015 Washington', tag: 'washington', v: {} },
     { key: '2019WAS', city: '2019 Washington', meta: 'Offense', label: '2019 Washington, offense', tag: 'washington-unit', v: { unit: 'off' } },
     { key: '2021WAS', city: '2021 Washington', meta: 'Football Team', label: '2021 Washington Football Team', tag: 'football-team', v: {} },
-    { key: '2022WAS', city: '2022 Washington', meta: 'Commanders', label: '2022 Washington Commanders', tag: 'commanders', v: { daily: true } },
+    { key: '2022WAS', city: '2022 Washington', meta: 'Commanders ' + U(0xB7) + ' Daily no. ' + (ctx.order.indexOf('2022WAS') + 1), label: '2022 Washington Commanders', tag: 'commanders', v: { daily: true } },
     { key: '2015LAR', city: '2015 St. Louis', meta: 'Rams', label: '2015 St. Louis Rams', tag: 'st-louis', v: {} },
     { key: '2016LAR', city: '2016 Los Angeles', meta: 'Rams ' + U(0xB7) + ' Defense', label: '2016 Los Angeles Rams, defense', tag: 'la-rams', v: { unit: 'def' } },
     { key: '2016LAC', city: '2016 San Diego', meta: 'Chargers', label: '2016 San Diego Chargers', tag: 'san-diego', v: { timed: false } },
-    { key: '2019LV', city: '2019 Oakland', meta: 'Raiders', label: '2019 Oakland Raiders', tag: 'oakland', v: { daily: true } },
+    { key: '2019LV', city: '2019 Oakland', meta: 'Raiders ' + U(0xB7) + ' Daily no. ' + (ctx.order.indexOf('2019LV') + 1), label: '2019 Oakland Raiders', tag: 'oakland', v: { daily: true } },
     { key: '2020LV', city: '2020 Las Vegas', meta: 'Raiders', label: '2020 Las Vegas Raiders', tag: 'las-vegas', v: {} },
     { key: '2026KC', city: '2026 Kansas City', meta: 'Chiefs ' + U(0xB7) + ' Season so far', label: '2026 Kansas City Chiefs', tag: 'season-so-far', v: {} },
     { key: '2026WAS', city: '2026 Washington', meta: 'Commanders ' + U(0xB7) + ' Season so far ' + U(0xB7) + ' Offense', label: '2026 Washington Commanders, offense', tag: 'season-so-far-unit', v: { unit: 'off' } },

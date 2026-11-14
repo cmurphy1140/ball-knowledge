@@ -183,6 +183,10 @@ export function setTimeZone(tz) { process.env.TZ = tz; return tz; }
  * opts.hot            value for window.claude.hot.data (the page's hot-reload restore path).
  */
 export async function createGame(opts = {}) {
+  // One turn of the event loop before each window: jsdom only lets go of a closed window (about 9 MB
+  // with the data in it) once the loop turns, and a generator that awaits nothing but createGame never
+  // lets it. Without this a full run holds every window it ever made and runs out of heap.
+  await new Promise((r) => setImmediate(r));
   const src = loadSources();
   const tz = setTimeZone(opts.tz || DEFAULT_TZ);
   const now = opts.now == null ? Date.UTC(2026, 10, 14, 17, 0, 0) : +opts.now;

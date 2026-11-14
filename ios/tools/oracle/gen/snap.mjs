@@ -37,7 +37,8 @@ export function lineupSnap(g, t0) {
     fb: fb.textContent,
     clueBtn: !$('pClueBtn').hidden,
     count: $('pCount').textContent,
-    units: game && game.cnts ? game.cnts.map((c) => c.node.textContent) : [],
+    // Array.from, not game.cnts.map: an array made by the page's own map belongs to the page's window and keeps that whole window alive
+    units: game && game.cnts ? Array.from(game.cnts, (c) => c.node.textContent) : [],
     clock: clock.textContent,
     word: clock.getAttribute('data-word') === '1',
     low: clock.getAttribute('data-low') === '1',
@@ -97,8 +98,13 @@ export function rowsSnap(g) {
       })
     };
   });
-  // the field markers, in slot order
-  const field = Array.from(g.$('pField').querySelectorAll('g.mk')).map(function (m, i) {
+  const field = fieldSnap(g.$('pField'));
+  return { units: units, field: field };
+}
+
+// The markers of a drawn field, in slot order.
+export function fieldSnap(host) {
+  return Array.from(host.querySelectorAll('g.mk')).map(function (m, i) {
     const chip = m.querySelector('.chip'), num = m.querySelector('text.f-num'), lab = m.querySelector('text.f-lab');
     let kind = 'none';
     if (chip) {
@@ -112,7 +118,6 @@ export function rowsSnap(g) {
     return { i: i, off: m.getAttribute('data-off') === '1', kind: kind, dim: chip && chip.getAttribute('opacity') ? +chip.getAttribute('opacity') : 1, num: num ? num.textContent : null,
       lab: lab ? lab.textContent : null, labY: lab ? +lab.getAttribute('y') : null, sel: !!m.querySelector('.m-sel'), at: m.getAttribute('transform') };
   });
-  return { units: units, field: field };
 }
 
 // What the result card says, and what the round left behind.
@@ -143,6 +148,11 @@ export function quizSnap(g) {
   assert(sugg.length === bk.sugg.length || $('qSugg').hidden, 'every suggestion is drawn');
   const on = suggBtns.map((b) => b.getAttribute('data-on') === '1');
   const entry = quiz && quiz.daily && bk.save[cfg.store][quiz.daily] ? plain(bk.save[cfg.store][quiz.daily]) : null;
+  const over = !$('qResult').hidden;
+  if (quiz && bk.view === 'quiz') {
+    assert(over === !!quiz.over, 'the result card shows exactly when the quiz is over');
+    if (over) assert($('qShare').textContent === bk.quizShare(quiz), 'the result card holds the share text');
+  }
   return {
     view: bk.view,
     type: quiz ? quiz.type : '', t: quiz ? quiz.t : -1, daily: quiz ? quiz.daily : 0,
@@ -158,8 +168,9 @@ export function quizSnap(g) {
     in: input.value, inShown: !input.hidden,
     fb: $('qFb').textContent, fbShown: !$('qFb').hidden,
     sugg: sugg, suggOn: on.indexOf(true), suggShown: !$('qSugg').hidden,
-    result: !$('qResult').hidden, why: $('qWhy').textContent, name: $('qName').textContent, sub: $('qSub').textContent, subShown: !$('qSub').hidden,
-    share: $('qShare').textContent,
+    // the result card keeps its old text while hidden; only report it when it is showing
+    result: over, why: over ? $('qWhy').textContent : '', name: over ? $('qName').textContent : '', sub: over ? $('qSub').textContent : '', subShown: over && !$('qSub').hidden,
+    share: over ? $('qShare').textContent : '',
     entry: entry,
     home: homeSnap(g),
     store: g.storage.raw() || ''
