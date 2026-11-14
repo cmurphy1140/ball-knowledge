@@ -1,0 +1,15 @@
+{
+"about":"Written by ios/tools/oracle (npm run golden). Do not edit by hand.",
+"site":"ball-knowledge-rouge.vercel.app",
+"source":{"src/page.html":"b8ea974917203ab8daf4677b1493a4fe28cc30daa4cc05394f9391a55240471a","data/data.json":"a2ae6f603d32745a86c51a0dceb81bf9223782310c45896d47404fc0b561ecc5"},
+"injectedLine":"window.__BK__ = { D, P, L, ALIAS, PATHS, POS, NICK, BOOM, JMBIG, NAMED, SITE, Y0, Y1, YEARS, T, TEAM_IDS, DIVS, POSWORD, teamAt, fill, el, sv, rng, shuffled, pick, mod, range, clockText, bits, joinNice, pad2, lum, inkOn, an, SUF, toks, sq, typedKey, namesOf, FIRST, nickShown, nickKeys, keysOf, editDist, STARTS, JERSEYS, ALL_KEYS, DAILY_ORDER, JPOOL, JDAILY, BDAILY, NDAILY, dayNo, dailyKey, keyYear, keyTeam, keyLabel, todayText, STORE, persist, copyText, PAGES, show, FW, FH, LOS, spread, layout, fieldBase, openShape, numText, makeField, GHOST, TIERS, tierFor, UNITS, newGame, packGame, gameStats, nextUp, shareText, chipsEl, setClock, paintMeter, setPView, startLineup, onTick, jerseyEl, clueText, paintSlot, paintAll, paintCounts, setFb, goalText, idleFb, clearSel, saveLive, openSlots, findHits, swallow, accept, onType, onEnter, takeClue, onPick, settle, finish, showResult, randomKey, DOWNS, ordDown, weekLabel, PHRASE, linePhrase, SEARCH, playerSuggest, STOP, ntoks, NSEARCH, namedSuggest, stopsOf, teamCount, boomHead, boomWord, QZ, qDaily, startQuiz, quizShare, paintQuiz, guessQuiz, closeSugg, onQuizType, moveSugg, sideRow, renderHome, levelOf, renderTicket, renderBoard, buildPicker, pickOpts, goPage, goHome, askQuit, chosenKey, start, get save() { return save; }, get view() { return view; }, get game() { return game; }, get tick() { return tick; }, get fieldApi() { return fieldApi; }, get quiz() { return quiz; }, get sugg() { return sugg; }, get suggOn() { return suggOn; } };\n",
+"tools":{"jsdom":"31.0.1","node":"24.21.0","icu":"78.3","tz":"2026c","unicode":"17.0"},
+"files":[
+{"file":"rng.json","bytes":89382,"sha256":"a3bd61c34768ad520140101dd586e46ecda8c6856710fc5a827ea952b32556b9","counts":{"seeds":19,"wrapped":9,"shuffles":104}},
+{"file":"names.json","bytes":949961,"sha256":"c8b091b040d6eace61b57d5650621bbf1f868aafa29b26169344d24ad0684a97","counts":{"dataStrings":4284,"adversarial":537,"quirks":14,"players":3020,"firstNames":141}},
+{"file":"editdist.json","bytes":255068,"sha256":"268fed56ccdbc06683a1afb2c6de7d9206589a6f2da640cd4574caa5e45b33b3","counts":{"pairs":3933,"calls":7866}},
+{"file":"teams.json","bytes":110688,"sha256":"4e7117ee7abc06b86405b51edcab29fe7dbbab93361e56bac711dfe8c2210e31","counts":{"teamAt":416,"keyLabels":416,"colors":61,"markers":32}},
+{"file":"daily.json","bytes":328582,"sha256":"cefdac87407847cf5bde913aab57ff00616149af8e587898a2df2dfab6bd2136","counts":{"dayNo":3150,"dates":450,"zones":7,"sameInstant":126,"days":1506,"clock":65,"today":27,"picker":31}},
+{"file":"layout.json","bytes":155591,"sha256":"60af2010647dbd9a7ebc74a2a030372362b6eba47dbb8d17a617af0e29b97c5a","counts":{"lineups":416,"ghost":1,"points":10008}}
+]
+}

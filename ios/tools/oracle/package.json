@@ -1,0 +1,16 @@
+{
+  "name": "ball-knowledge-oracle",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Runs the real web game from src/page.html inside jsdom and writes golden test vectors for the Swift port.",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "golden": "node generate.mjs",
+    "check": "node check.mjs",
+    "hashes": "node hashes.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "31.0.1"
+  }
+}

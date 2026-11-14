@@ -1,0 +1,115 @@
+# Ball Knowledge for iPhone. XcodeGen spec: run `xcodegen generate` in this folder
+# (scripts/build.sh does it for you). The generated BallKnowledge.xcodeproj and
+# App/Info.plist are kept in git, so edit this file, never those.
+name: BallKnowledge
+
+options:
+  bundleIdPrefix: com.cmurphy
+  xcodeVersion: "27.2"
+  developmentLanguage: en
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    DEVELOPMENT_TEAM: 9LDVUD49X7
+    CODE_SIGN_STYLE: Automatic
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    # iPhone only: no iPad, no Mac or Vision "designed for iPhone" destinations.
+    TARGETED_DEVICE_FAMILY: "1"
+    SUPPORTS_MACCATALYST: NO
+    SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
+    SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
+
+targets:
+  BallKnowledge:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+        excludes:
+          # Local-only art is never committed, so the project must not list it.
+          # The "Copy local art" phase below bundles it when it is there.
+          - "Resources/LocalArt"
+      # The web game's data, used in place: one copy in the repo, bundled as data.json.
+      - path: ../data/data.json
+        buildPhase: resources
+        createIntermediateGroups: false
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: Ball Knowledge
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSRequiresIPhoneOS: true
+        ITSAppUsesNonExemptEncryption: false
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        UIAppFonts:
+          - BigShouldersDisplay-SemiBold.ttf
+          - BigShouldersDisplay-Bold.ttf
+          - BigShouldersDisplay-ExtraBold.ttf
+          - BigShouldersDisplay-Black.ttf
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.cmurphy.ballknowledge
+        PRODUCT_NAME: BallKnowledge
+        SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+    postBuildScripts:
+      - name: Copy local art (optional)
+        basedOnDependencyAnalysis: false
+        script: |
+          # App/Resources/LocalArt is gitignored. When it exists its files ship in
+          # the bundle's LocalArt folder; when it does not, the app builds without it.
+          set -eu
+          SRC="${SRCROOT}/App/Resources/LocalArt"
+          DST="${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/LocalArt"
+          rm -rf "${DST}"
+          if [ -d "${SRC}" ]; then
+            rsync -a --exclude '.*' "${SRC}/" "${DST}/"
+          fi
+
+  BallKnowledgeUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: UITests
+    dependencies:
+      - target: BallKnowledge
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.cmurphy.ballknowledge.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: BallKnowledge
+
+schemes:
+  BallKnowledge:
+    build:
+      targets:
+        BallKnowledge: all
+        BallKnowledgeUITests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - name: BallKnowledgeUITests
+          parallelizable: false
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

@@ -1,0 +1,13 @@
+{
+  "name": "ball-knowledge-refshots",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Captures the web game at iPhone size (393 x 852 @3x, dark and light) as the visual reference for the native iOS app.",
+  "scripts": {
+    "shots": "node capture.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.59.1"
+  }
+}
