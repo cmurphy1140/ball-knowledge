@@ -81,11 +81,17 @@ photo "hurts.jpeg"   "players/jalenhurts.jpg" 1200
 photo "tj-watt.jpeg" "players/tjwatt.jpg"     1200
 
 echo "games"
+# Photos first; the illustrated collage panels below replace them where both exist.
 photo "tuck rule.png" "games/thetuckrulegame.jpg" 1200
 photo "28-3.png"      "games/283.jpg"             1200
+# Each collage is six games, left to right, top to bottom. "-" is a panel whose game is not in the data.
+[ -f "$SRC/games-with-names.png" ] && swift "$HERE/crop-panels.swift" "$SRC/games-with-names.png" "$DST/games" \
+  thetuckrulegame 283 thecatch thehelmetcatch theicebowl thephillyspecial
+[ -f "$SRC/more-games.png" ] && swift "$HERE/crop-panels.swift" "$SRC/more-games.png" "$DST/games" \
+  thegreatestgameeverplayed theimmaculatereception - oneyardshort - theminneapolismiracle
 
 # Anything in the source folder this script does not know about yet.
-KNOWN="journeyman.png games-with-names.png hurts.jpeg brady.jpeg tj-watt.jpeg tuck rule.png 28-3.png logos.jpeg nfl.png"
+KNOWN="more-games.png journeyman.png games-with-names.png hurts.jpeg brady.jpeg tj-watt.jpeg tuck rule.png 28-3.png logos.jpeg nfl.png"
 echo "not placed yet"
 find "$SRC" -maxdepth 1 -type f ! -name ".*" | while read -r f; do
   b="$(basename "$f")"
