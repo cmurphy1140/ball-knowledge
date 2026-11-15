@@ -485,8 +485,10 @@ public struct SideQuiz: Sendable {
 
     // MARK: Handlers
 
-    /// The guess field now reads `text`: the list under it is rebuilt. Web: `onQuizType`.
+    /// The guess field now reads `text`: the list under it is rebuilt. Line breaks are dropped, as
+    /// a one-line text field drops them. Web: `onQuizType`.
     public mutating func type(_ text: String, data: GameData) {
+        let text = JS.textFieldValue(text)
         input = text
         guard !isOver else { return }
         guard let res = data.suggestions(for: game, text: text, excluding: guesses) else {

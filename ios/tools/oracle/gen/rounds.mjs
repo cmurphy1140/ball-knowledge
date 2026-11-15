@@ -1060,6 +1060,37 @@ export async function genRounds() {
   await each('surprise-last-index', [{}], (c) => S.entry(ctx, c, { mode: 'surprise', unit: 'def', r: 0.9999999999 }), 1);
   await each('board-play', [{ key: r.pick(ix.keys), key2: r.pick(ix.keys) }, { key: r.pick(ix.keys), key2: r.pick(ix.keys) }], (c) => S.entry(ctx, c, { mode: 'board' }), 1);
 
+  // 17. a pasted line break (a one-line field drops it) and keys pressed while "Give up?" is asked
+  await each('typed-line-break', keys(8), async function (c) {
+    const d = await openFree(ctx, c.key, 'all', true);
+    d.setInput('zz\nqq');
+    assert(d.prev.in === 'zzqq', 'the field drops a pasted line break');
+    d.enter();
+    assert(d.prev.fbk === 'miss', 'and what is left is a miss');
+    d.setInput('\r\n'); d.enter();
+    const s = d.open().filter((x) => { const l = F.forms(d.bk, x.p).last; return l.length >= 4 && d.open().every((o) => o === x || F.forms(d.bk, o.p).last !== l); })[0];
+    need(!!s, 'an open spot with a last name of its own');
+    const l = F.forms(d.bk, s.p).last, mid = l.length >> 1;
+    d.setInput(l.slice(0, mid) + '\r\n' + l.slice(mid));
+    if (d.state(s.i) === 0) d.enter();
+    need(d.state(s.i) !== 0, 'the name with a line break pasted into it counts');
+    d.tag('lineBreak');
+    endRound(d, 'quit');
+    return d;
+  }, 1);
+  await each('typed-during-confirm', keys(4), async function (c) {
+    const d = await openFree(ctx, c.key, 'all', true);
+    d.type('zz');
+    d.quit();
+    d.blockedChar('q'); d.blockedEnter();
+    d.keep();
+    assert(d.prev.in === 'zz', 'what was typed before is still there');
+    d.enter();
+    assert(d.prev.fbk === 'miss', 'Enter after keep going checks it');
+    endRound(d, 'quit');
+    return d;
+  }, 1);
+
   scratch.close();
 
   // every case the brief lists must really have happened in the game

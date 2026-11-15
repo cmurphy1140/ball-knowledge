@@ -183,7 +183,7 @@ import BallKnowledgeCore
             }
         }
         print("GOLDEN side-rounds.json: \(rounds.count) rounds, \(steps) steps, \(guesses) guesses; \(store.normalized) stored saves matched only after reading both")
-        #expect(rounds.count == 153 && steps == 6_412 && guesses == 454)
+        #expect(rounds.count == 154 && steps == 6_434 && guesses == 455)
         t.finish()
     }
 

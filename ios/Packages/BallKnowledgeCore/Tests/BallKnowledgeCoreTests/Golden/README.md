@@ -223,6 +223,10 @@ recorded. All in `America/New_York`; none starts from a stored save (reloads ins
 | `view` | `v` | switched to `field` or `list` |
 | `tick` | | the 250 ms timer fired once (only recorded while a clock is running) |
 | `reload` | | the page was closed and opened again at `t0 + at` with the localStorage it left behind |
+| `in-blocked` | `v` | while `Give up?` is asked the name field is hidden, so a key press reaches nothing on the web (nothing changes). A port is sent the same character and must ignore it. |
+| `enter-blocked` | | the same for Enter |
+
+A pasted value in `in` (`how: "set"`) may carry line breaks: the one-line field drops CR and LF, and the snapshot shows what was left.
 
 ### Snapshot fields (in `d`)
 
@@ -415,6 +419,7 @@ A guess id is a player index for `jm` and `boom` and a `named` row for `named`.
 | `boards` | `[{save, sum, legend, team, year, levels, pressed, boards, taps}]` | the Board page for each save: the summary line, the legend `[{level, label}]`, the lineup chosen, `levels` (416 digits, the level of each square in `boardOrder`), `pressed` (indices of pressed squares). For `three` also `boards` (both grids in full: `{years, divs, teams, cells: [{level, aria, title, pressed}]}`) and `taps` (squares tapped one after another: the ticket, the form and the pressed square after each). |
 | `randomKey` | `[{save, fresh, r, key}]` | `randomKey()` with `Math.random()` returning `r`: `pool[floor(r * pool.length)]` where `pool` is the keys of `ALL_KEYS` (`teams.json` `allKeys`) with no names on the board, or all of them when none is left. `fresh` is how many such keys the save has. |
 | `storageLoad` | `[{name, tz, ms, day, raw, save, after, rewritten, card}]` | a page opened with `raw` in localStorage: the `save` the game ended up with, the string in localStorage afterwards (`after`), whether the page wrote it back, and what the daily card showed. Covers nothing stored, broken JSON, wrong types, missing parts, and a live round that is today's, stale, unknown, expired, or about to expire. |
+| `oddSaves` | `[{name, tz, ms, day, text, cp, written, home, board, keys, randomKey}]` | a page opened at `ms` with hand-edited or damaged `text` in localStorage, as `JSON.parse` and the page's own coercions read it: numbers too big for a double (`1e400`, read as Infinity), a byte-order mark before the save (not JSON white space, so nothing is read), a key given twice (the last wins), known masks of every odd kind (fractions, text, `true`, lists, objects, above 2^32, negative), round states, clues, guesses and answers of the wrong type, the daily rounds as a list, and a live round whose end time is text. `cp` is the code points of `text` when it is not plain ASCII. `written` is whether the page wrote localStorage at load. `home` is `{card, side}` as in `homeSnap`, `board` is `{sum, levels}`, `keys` is `[key, bits, played]` for each odd key (`bits(known[key] \|\| 0)`, `!!known[key]`), and `randomKey` is `[r, key]`. The text written back is not compared: the web writes back what it found, a port may write what it read. |
 | `sessions` | `[{name, tz, t0, firstDay, phases, store, parsed}]` | three long sittings on one save (one evening; four days running; free play only). `phases` is `[{what, at, day, store}]`: what was just done, when (ms since `t0`), the day number, and the full localStorage string at that point. `store` is the final string, `parsed` the same as JSON. |
 
 ```json

@@ -47,8 +47,11 @@ package enum JS {
         let isTie = quarters == quarters.rounded(.down) && quarters.truncatingRemainder(dividingBy: 2) == 1
         var text = String(format: "%.1f", locale: nil, magnitude)
         if isTie {
-            let up = ((magnitude * 10).rounded(.down) + 1) / 10
-            text = String(format: "%.1f", locale: nil, up)
+            // The value is exactly a whole number plus .25 or .75, so the answer is that whole
+            // number followed by .3 or .8. (Working it out as (x * 10 + 1) / 10 loses the digit
+            // once x * 10 is past 2^53.)
+            let whole = magnitude.rounded(.down)
+            text = String(format: "%.0f", locale: nil, whole) + (magnitude - whole == 0.25 ? ".3" : ".8")
         }
         // JavaScript keeps the sign of a negative number that rounds to zero ("-0.0").
         return x < 0 ? "-" + text : text
@@ -123,7 +126,66 @@ package enum JS {
         return seen ? sign * n : .nan
     }
 
+    /// `Number(s)` for a string: white space trimmed, then the whole rest must be a number. Empty
+    /// text is 0; `Infinity` with an optional sign; `0x`, `0o` and `0b` integers (no sign); or a
+    /// decimal with an optional sign, fraction and exponent. Anything else is NaN.
+    package static func number(_ s: String) -> Double {
+        var u = Array(s.unicodeScalars)[...]
+        while let f = u.first, isWhiteSpace(f) { u = u.dropFirst() }
+        while let l = u.last, isWhiteSpace(l) { u = u.dropLast() }
+        if u.isEmpty { return 0 }
+        func text(_ v: ArraySlice<Unicode.Scalar>) -> String { String(String.UnicodeScalarView(v)) }
+        func isDigit(_ c: Unicode.Scalar, radix: UInt32 = 10) -> Bool {
+            switch c.value {
+            case 48..<(48 + min(radix, 10)): true
+            case 65...70, 97...102: radix == 16
+            default: false
+            }
+        }
+        if u.count > 2, u.first == "0", let p = u.dropFirst().first {
+            let radix: UInt32? = p == "x" || p == "X" ? 16 : p == "o" || p == "O" ? 8 : p == "b" || p == "B" ? 2 : nil
+            if let radix {
+                let digits = u.dropFirst(2)
+                guard digits.allSatisfy({ isDigit($0, radix: radix) }) else { return .nan }
+                // Hex is read exactly (and rounded once) by the hex-float reader; the others are
+                // exact up to 2^53.
+                if radix == 16 { return Double("0x" + text(digits) + "p0") ?? .nan }
+                return digits.reduce(0.0) { $0 * Double(radix) + Double($1.value - 48) }
+            }
+        }
+        var sign = ""
+        if let f = u.first, f == "+" || f == "-" { sign = f == "-" ? "-" : ""; u = u.dropFirst() }
+        if text(u) == "Infinity" { return sign == "-" ? -.infinity : .infinity }
+        let int = u.prefix(while: { isDigit($0) })
+        u = u.dropFirst(int.count)
+        var frac: ArraySlice<Unicode.Scalar> = []
+        if u.first == "." {
+            frac = u.dropFirst().prefix(while: { isDigit($0) })
+            u = u.dropFirst(1 + frac.count)
+        }
+        guard !int.isEmpty || !frac.isEmpty else { return .nan }
+        var exponent = "0"
+        if let e = u.first, e == "e" || e == "E" {
+            u = u.dropFirst()
+            var expSign = ""
+            if let f = u.first, f == "+" || f == "-" { expSign = f == "-" ? "-" : ""; u = u.dropFirst() }
+            let digits = u.prefix(while: { isDigit($0) })
+            guard !digits.isEmpty else { return .nan }
+            u = u.dropFirst(digits.count)
+            exponent = expSign + text(digits)
+        }
+        guard u.isEmpty else { return .nan }
+        return Double(sign + (int.isEmpty ? "0" : text(int)) + "." + (frac.isEmpty ? "0" : text(frac)) + "e" + exponent) ?? .nan
+    }
+
     // MARK: Strings
+
+    /// The value an `<input type="text">` holds after an edit: HTML's value sanitization strips
+    /// every line feed and carriage return, so a pasted line break never reaches the game.
+    package static func textFieldValue(_ s: String) -> String {
+        guard s.utf8.contains(where: { $0 == 0x0A || $0 == 0x0D }) else { return s }
+        return String(String.UnicodeScalarView(s.unicodeScalars.filter { $0 != "\n" && $0 != "\r" }))
+    }
 
     /// `String(n).padStart(width, "0")`.
     package static func padStart(_ s: String, to width: Int, with pad: Character = "0") -> String {

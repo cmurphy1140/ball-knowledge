@@ -161,6 +161,35 @@ import BallKnowledgeCore
             t.json(.array(page.card.buttonTitles.map(JSONValue.string)), w["buttons"] ?? .null, name + " card buttons")
         }
 
+        // Odd saves: damaged or hand-edited text. What the player sees must match; the text written
+        // back may differ (the app writes the values it read, the web writes back what it found).
+        for o in file["oddSaves"]?.a ?? [] {
+            let name = "odd save: " + (o["name"]?.s ?? "?")
+            let ms = o["ms"]?.d ?? 0
+            let cal = try Zones.calendar(o["tz"]?.s ?? "")
+            let text = JSONValue.text(o["text"]?.s, cp: o["cp"])
+            var save = SaveState(storedText: text)
+            let day = DailyCalendar.dayNumber(at: Page.date(ms), calendar: cal)
+            t.same(day, o["day"]?.i ?? -1, name + " day")
+            t.same(save.settleOnLaunch(day: day, now: ms, data: data), o["written"]?.b ?? false, name + " written")
+            let page = Page(data: data, calendar: cal, t0: ms, now: ms, storage: text)
+            t.same(page.save, save, name + " page save")
+            t.json(page.homeSnap, o["home"] ?? .null, name + " home")
+            let board = Board(save: save)
+            t.same(board.summary, o["board"]?["sum"]?.s ?? "", name + " board sum")
+            t.same(board.cells.map { String($0.level) }.joined(), o["board"]?["levels"]?.s ?? "", name + " board levels")
+            let fresh = Set(LineupPicker.freshLineups(save: save))
+            for k in o["keys"]?.a ?? [] {
+                let key = try #require(LineupKey(rawValue: k.a.first?.s ?? ""))
+                t.same(board.cells.first { $0.key == key }?.count ?? -1, k.a.count > 1 ? k.a[1].i ?? -2 : -2, name + " bits " + key.rawValue)
+                t.same(!fresh.contains(key), k.a.count > 2 ? k.a[2].b ?? false : false, name + " played " + key.rawValue)
+            }
+            for r in o["randomKey"]?.a ?? [] {
+                let x = r.a.first?.d ?? 0
+                t.same(LineupPicker.randomLineup(save: save) { x }.rawValue, r.a.count > 1 ? r.a[1].s ?? "" : "", name + " randomKey \(x)")
+            }
+        }
+
         // Whole sittings: the day number at every phase, and the final save read back.
         for s in file["sessions"]?.a ?? [] {
             let name = s["name"]?.s ?? "?"

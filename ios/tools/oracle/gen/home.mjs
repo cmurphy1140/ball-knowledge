@@ -1,6 +1,6 @@
 // Area 9: the home page, the board, the picker, what a save turns into, random lineups, whole sessions.
 import { createGame } from '../harness.mjs';
-import { prng, plain, assert } from '../lib.mjs';
+import { prng, plain, assert, cps } from '../lib.mjs';
 import { Drv, dayMs, localMs } from './driver.mjs';
 import { QDrv } from './qdriver.mjs';
 import { homeSnap, boardSnap, fieldSnap } from './snap.mjs';
@@ -238,6 +238,56 @@ export async function genHome() {
       g.close();
     }
     out.storageLoad = loads;
+
+    /* ---------- odd saves: hand-edited or damaged text the page still reads ----------
+       Each one is read by JSON.parse and the page's own coercions; what the player sees is kept, not the save text it writes back. */
+    const RAW = /"@@(.*?)@@"/g;
+    const text = (o) => JSON.stringify(o).replace(RAW, '$1');
+    const base = (o) => Object.assign(emptySave(), { known: { [key]: 0xFFFFFF } , daily: { [n]: doneEntry } }, o || {});
+    const doneWith = (o) => base({ daily: { [n]: Object.assign({}, doneEntry, o) } });
+    const jmT = bk.qDaily('jm', n), namedT = bk.qDaily('named', n);
+    const oddKnown = [0.5, -0.5, 1.5, 255.9, '3', '0', '', ' 7 ', '0x10', 'abc', true, false, null, [1], [], ['5'], [1, 2], {}, Math.pow(2, 32), Math.pow(2, 32) + 5, -1, 1e300, 'Infinity', '@@-9223372036854775808@@', '@@1e400@@', '@@-1e400@@'];
+    const oddKeys = ALL.slice(0, oddKnown.length);
+    const knownOf = (vals) => { const k = {}; vals.forEach((v, i) => { k[oddKeys[i]] = v; }); return k; };
+    const odd = [
+      ['a known mask too big for a number', text(base({ known: { [key]: 0xFFFFFF, '2014ARI': '@@1e400@@' } }))],
+      ['a known mask too big and negative', text(base({ known: { [key]: 0xFFFFFF, '2014ARI': '@@-1e400@@' } }))],
+      ['a done round whose end time is too big', text(doneWith({ endAt: '@@1e400@@' }))],
+      ['a Journeyman guess too big', text(base({ jm: { [n]: { t: jmT, g: [1, '@@1e400@@'], over: false, won: false } } }))],
+      ['a byte-order mark before the save', U(0xFEFF) + text(base())],
+      ['the same lineup twice, the last one empty', '{"known":{"2014ARI":3,"2014ARI":0,"' + key + '":16777215},"daily":{"' + n + '":' + JSON.stringify(doneEntry) + '}}'],
+      ['the same lineup twice, the last one played', '{"known":{"2014ARI":0,"2014ARI":5,"' + key + '":16777215},"daily":{"' + n + '":' + JSON.stringify(doneEntry) + '}}'],
+      ['known masks of every odd kind', text(base({ known: knownOf(oddKnown) }))],
+      ['a done round with a state of 1.5', text(doneWith({ st: doneEntry.st.map((s, i) => (i === 5 ? 1.5 : s)) }))],
+      ['a done round with clues as text', text(doneWith({ cl: 'yes' }))],
+      ['a done round with 20 states', text(doneWith({ st: doneEntry.st.slice(0, 20) }))],
+      ['a done round with a state of 7', text(doneWith({ st: doneEntry.st.map((s, i) => (i === 0 ? 7 : s)) }))],
+      ['a done round with a state as text', text(doneWith({ st: doneEntry.st.map((s, i) => (i === 0 ? '1' : s)) }))],
+      ['a Journeyman round with a guess as text', text(base({ jm: { [n]: { t: jmT, g: [1, 2, 3, 'x'], over: false, won: false } } }))],
+      ['a Journeyman round with one guess as text', text(base({ jm: { [n]: { t: jmT, g: [1, 'x'], over: false, won: false } } }))],
+      ['a Journeyman answer as text', text(base({ jm: { [n]: { t: String(jmT), g: [1], over: false, won: false } } }))],
+      ['a Journeyman answer in a list', text(base({ jm: { [n]: { t: [jmT], g: [1, 2], over: false, won: false } } }))],
+      ['a Name That Game round with a guess as text', text(base({ named: { [n]: { t: namedT, g: ['x', 2], over: 1, won: 0 } } }))],
+      ['guesses stored as text', text(base({ jm: { [n]: { t: jmT, g: 'abc', over: false, won: false } } }))],
+      ['the daily rounds stored as a list', text(Object.assign(emptySave(), { daily: Array.from({ length: n + 1 }, (_, i) => (i === n ? doneEntry : null)) }))],
+      ['a live round whose end time is text, passed', text(Object.assign(emptySave(), { live: live({ endAt: String(now - 1000) }) }))],
+      ['a live round whose end time is text, ahead', text(Object.assign(emptySave(), { live: live({ endAt: String(now + 60000) }) }))],
+      ['a live round whose end time is the text 0', text(Object.assign(emptySave(), { live: live({ endAt: '0' }) }))]
+    ];
+    const oddSaves = [];
+    for (const c of odd) {
+      const g = await createGame({ now: now, storage: c[1], strictRandom: true });
+      const h = homeSnap(g), b = boardSnap(g, true);
+      const o = { name: c[0], tz: NY, ms: now, day: n, text: c[1], written: g.storage.raw() !== c[1], home: h,
+        board: { sum: b.sum, levels: [].concat.apply([], b.boards.map((x) => x.cells)).map((x) => x.level).join('') },
+        keys: ['2014ARI'].concat(oddKeys).map((k) => [k, bk.bits(g.bk.save.known[k] || 0), !!g.bk.save.known[k]]),
+        randomKey: [0, 0.5, 0.999].map(function (rv) { g.random.queue(rv); return [rv, g.bk.randomKey()]; }) };
+      if (/[^ -~]/.test(c[1])) o.cp = cps(c[1]);
+      oddSaves.push(o);
+      g.close();
+    }
+    assert(oddSaves[0].home.card.buttons.join() === 'Copy result,See the answers' && oddSaves[4].home.card.buttons.join() === 'Kick off','too-big numbers keep the save; a byte-order mark drops it');
+    out.oddSaves = oddSaves;
   }
 
   /* ---------- whole sessions ---------- */
@@ -297,7 +347,7 @@ export async function genHome() {
   scratch.close();
   return {
     file: 'home-board.json',
-    counts: { cards: cards.length, sideRows: sideRows.length, levels: out.levels.length + out.levelsOdd.length, tickets: out.tickets.length, boards: boards.length, randomKey: randomKey.length, storageLoad: out.storageLoad.length,
+    counts: { cards: cards.length, sideRows: sideRows.length, levels: out.levels.length + out.levelsOdd.length, tickets: out.tickets.length, boards: boards.length, randomKey: randomKey.length, storageLoad: out.storageLoad.length, oddSaves: out.oddSaves.length,
       sessions: sessions.length, sessionPhases: sessions.reduce((a, s) => a + s.phases.length, 0) },
     data: out
   };

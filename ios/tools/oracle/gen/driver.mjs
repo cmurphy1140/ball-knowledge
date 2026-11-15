@@ -102,6 +102,9 @@ export class Drv {
     this.noteHits(before, tail0, v);
     return s;
   }
+  // while "Give up?" is asked the field is hidden, so a key press reaches nothing; the app is sent the same press and must ignore it
+  blockedChar(ch) { assert(!this.g.shown(this.g.$('pInput')), 'the field is hidden'); this.pass(100); this.tag('blockedInput'); return this.step('in-blocked', { v: ch }); }
+  blockedEnter() { assert(!this.g.shown(this.g.$('pInput')), 'the field is hidden'); this.pass(70); this.tag('blockedInput'); return this.step('enter-blocked'); }
   backspace() { this.pass(90); const v = this.g.backspace(this.g.$('pInput')); return this.step('in', { v: v, how: 'back' }); }
   enter() {
     const g = this.game, before = g.slots.map((s) => s.state), raw = this.input.trim(), k = this.bk.typedKey(raw);

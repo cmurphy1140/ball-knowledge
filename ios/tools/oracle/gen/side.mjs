@@ -452,6 +452,21 @@ export async function genSideRounds() {
     await each('rollover-' + type, days(6).map((n) => ({ type: type, n: n, outcome: 1 })), (c) => S.rollover(ctx, c), 1);
     await each('over-midnight-' + type, days(6).map((n) => ({ type: type, n: n, outcome: 2 })), (c) => S.overMidnight(ctx, c), 1);
   }
+  // a pasted line break: the one-line field drops it before anything is searched
+  await each('line-break-jm', days(6).map((n) => ({ type: 'jm', n: n })), async function (c) {
+    const d = await openQuiz(ctx, c.type, c.n);
+    d.setInput('jo\nsh');
+    assert(d.prev.in === 'josh', 'the field drops a pasted line break');
+    need(d.prev.sugg.length >= 1, 'something to suggest');
+    d.setInput('\r\n');
+    assert(d.prev.in === '' && d.prev.fb === '', 'line breaks alone are nothing');
+    d.setInput('zz\r\nqq');
+    assert(d.prev.in === 'zzqq', 'both kinds of line break go');
+    d.setInput('');
+    d.playTo(1, 'tap'); d.home();
+    d.tag('lineBreak');
+    return d;
+  }, 1);
   scratch.close();
 
   const tagCount = {};

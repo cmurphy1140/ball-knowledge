@@ -158,13 +158,35 @@ import BallKnowledgeCore
         #expect(bare.live == LineupRecord(key: "2019KC", unit: "all", timed: true, daily: 0, over: false, reason: "", endAt: 0, states: [1, 0], clues: [1, 0]))
         #expect(bare.daily[7]?.over == true)
 
-        // Days the game cannot look up, and masks that are not numbers, are left out.
-        let odd = SaveState(storedText: #"{"known":{"2019KC":7.9,"2020KC":"7","2021KC":-1,"2022KC":4294967296},"named":{"07":{"t":1},"1.0":{"t":1},"8":{"t":1}}}"#)
-        #expect(odd.known == ["2019KC": 7, "2021KC": -1, "2022KC": 4_294_967_296])
+        // Days the game cannot look up are left out. A mask is read the way the web's bit count
+        // reads it (ToNumber, then 32 bits), so the text "7" is 7, as it is on the web; a stored 0
+        // stays (the web writes it back), and other values that read as false are not there.
+        let odd = SaveState(storedText: #"{"known":{"2019KC":7.9,"2020KC":"7","2021KC":-1,"2022KC":4294967296,"2023KC":"","2024KC":0},"named":{"07":{"t":1},"1.0":{"t":1},"8":{"t":1}}}"#)
+        #expect(odd.known == ["2019KC": 7, "2020KC": 7, "2021KC": -1, "2022KC": 4_294_967_296, "2024KC": 0])
         #expect(Array(odd.namedGame.keys) == [8])
         // Unknown top-level fields are dropped, as the web drops them.
         let extra = SaveState(storedText: #"{"v":2,"known":{"2019KC":7},"extra":{"a":1}}"#)
         #expect(JSONValue(text: extra.storedText()) == JSONValue(text: #"{"known":{"2019KC":7},"daily":{},"jm":{},"boom":{},"named":{},"live":null}"#))
+    }
+
+    @Test func storedTextIsParsedTheWayJSONParseParsesIt() {
+        // A number too big for a double is infinity, not a broken save; it is written back as null, as JSON.stringify does.
+        let big = SaveState(storedText: #"{"known":{"2014ARI":1e400,"2019KC":3},"daily":{"35":{"key":"2019KC","st":[1],"cl":[0],"endAt":1e400}}}"#)
+        #expect(big.known == ["2014ARI": .min, "2019KC": 3])
+        #expect(big.daily[35]?.endAt == .infinity)
+        #expect(JSONValue(text: big.storedText())?["known"]?["2014ARI"] == .null)
+        #expect(JSONValue(text: big.storedText())?["daily"]?["35"]?["endAt"] == .null)
+        // The last of two equal keys wins; a byte-order mark is not white space, so that text is no save at all.
+        #expect(SaveState(storedText: #"{"known":{"2014ARI":3,"2014ARI":0}}"#).known == ["2014ARI": 0])
+        #expect(SaveState(storedText: "\u{FEFF}{\"known\":{\"2014ARI\":3}}") == SaveState())
+        #expect(SaveState(storedText: " \t\n{\"known\":{\"2014ARI\":3}}\r\n").known == ["2014ARI": 3])
+        // Values that are not quite right are read as the page reads them, not dropped with their
+        // record: a state is compared with ===, so 1.5 and "1" are neither found nor open.
+        let loose = SaveState(storedText: #"{"jm":{"4":{"t":"12","g":[1,"x"],"over":0}},"live":{"key":"2019KC","st":[1.5,"1",2],"cl":"yes","endAt":"0"}}"#)
+        #expect(loose.journeyman[4] == QuizRecord(target: 12, guesses: [1, -1]))
+        #expect(loose.live?.states == [-1, -1, 2])
+        #expect(loose.live?.clues == [1, 1, 1])
+        #expect((loose.live?.endAt ?? 0) > 0)
     }
 
     @Test func aStoreIsReadAndWrittenWithoutEverThrowing() {

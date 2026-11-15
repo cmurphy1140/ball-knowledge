@@ -11,10 +11,10 @@
 {"file":"teams.json","bytes":110688,"sha256":"4e7117ee7abc06b86405b51edcab29fe7dbbab93361e56bac711dfe8c2210e31","counts":{"teamAt":416,"keyLabels":416,"colors":61,"markers":32}},
 {"file":"daily.json","bytes":328582,"sha256":"cefdac87407847cf5bde913aab57ff00616149af8e587898a2df2dfab6bd2136","counts":{"dayNo":3150,"dates":450,"zones":7,"sameInstant":126,"days":1506,"clock":65,"today":27,"picker":31}},
 {"file":"layout.json","bytes":155591,"sha256":"60af2010647dbd9a7ebc74a2a030372362b6eba47dbb8d17a617af0e29b97c5a","counts":{"lineups":416,"ghost":1,"points":10008}},
-{"file":"lineup-rounds.json","bytes":3423697,"sha256":"776b45b64bb0f10f49ac5c656bdde9b6425e110e59673e4843f70000015a6da1","counts":{"rounds":256,"steps":14544,"results":283,"rowDumps":153,"roundsWithRows":55,"tags":146}},
+{"file":"lineup-rounds.json","bytes":3431299,"sha256":"67e27d746bdc13b183f4a1bf293a52b46c49dc7bfd6525e224127afa3ba2c6d5","counts":{"rounds":258,"steps":14562,"results":285,"rowDumps":153,"roundsWithRows":55,"tags":148}},
 {"file":"side-targets.json","bytes":892215,"sha256":"1f1d4ed9d4922caee798a3107c3dec021d821b7f487cc7a48a000a1046f5933e","counts":{"jm":786,"boom":460,"named":60}},
 {"file":"side-suggest.json","bytes":987290,"sha256":"50d08d6e116acf3c06eb9d3e4178e72e60fe61b8d52b73afffd1cbf26f5fc5e1","counts":{"player":{"queries":4598,"none":33,"empty":216,"excluded":260,"full":749},"named":{"queries":2265,"none":49,"empty":163,"excluded":149,"full":17},"total":6863}},
-{"file":"side-rounds.json","bytes":1464322,"sha256":"d328964b17df185419a54228b2191f5ecf66c52401bd669afc76c66f56965400","counts":{"rounds":153,"steps":6412,"guesses":454,"tags":42}},
-{"file":"home-board.json","bytes":174453,"sha256":"42505e07cd6438399475193916fb33639f66c951e500bc826dbbc47df2fd58ff","counts":{"cards":30,"sideRows":27,"levels":103,"tickets":30,"boards":6,"randomKey":84,"storageLoad":26,"sessions":3,"sessionPhases":27}}
+{"file":"side-rounds.json","bytes":1470578,"sha256":"209dfd6889ca061d5beab6ea34a50d4afa210c678a8dd778807ff0d8ea59144f","counts":{"rounds":154,"steps":6434,"guesses":455,"tags":43}},
+{"file":"home-board.json","bytes":225502,"sha256":"df71ccf667ec28427b505408cfe8c1c70f9efbc19ff845feb1612dc6d6844905","counts":{"cards":30,"sideRows":27,"levels":103,"tickets":30,"boards":6,"randomKey":84,"storageLoad":26,"oddSaves":23,"sessions":3,"sessionPhases":27}}
 ]
 }

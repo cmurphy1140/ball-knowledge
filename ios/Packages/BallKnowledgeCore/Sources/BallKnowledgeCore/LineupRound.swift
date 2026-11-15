@@ -327,9 +327,12 @@ public struct LineupRound: Sendable {
 
     /// The name field now reads `text` (one keystroke, a paste, a deletion). A name it spells is
     /// taken at once and the field clears; keystrokes that continue a name just taken are swallowed.
-    /// Web: the input event, `onType`.
+    /// Line breaks are dropped, as a one-line text field drops them. Nothing happens while the
+    /// give-up question is up: the web hides the field then. Web: the input event, `onType`.
     public mutating func type(_ text: String, save: inout SaveState) -> RoundChange {
         var change = RoundChange()
+        guard !isConfirmingQuit else { return change }
+        let text = JS.textFieldValue(text)
         input = text
         guard !isOver else { return change }
         if swallow(text) { return change }
@@ -339,10 +342,10 @@ public struct LineupRound: Sendable {
     }
 
     /// Enter (the Go key): takes a short nickname or a near miss, or says why nothing was taken.
-    /// Web: `onEnter`.
+    /// Nothing happens while the give-up question is up. Web: `onEnter`.
     public mutating func enter(save: inout SaveState) -> RoundChange {
         var change = RoundChange()
-        guard !isOver else { return change }
+        guard !isOver, !isConfirmingQuit else { return change }
         let raw = JS.trim(input)
         guard !raw.isEmpty else { return change }
         let k = NameMatching.typedKey(raw)

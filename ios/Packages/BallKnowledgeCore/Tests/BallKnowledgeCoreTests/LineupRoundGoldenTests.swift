@@ -50,7 +50,7 @@ import BallKnowledgeCore
             }
         }
         print("GOLDEN lineup-rounds.json: \(rounds.count) rounds, \(steps) steps, \(headers) headers, \(fins) results, \(rowsSeen) list renders; \(store.normalized) stored saves matched only after reading both")
-        #expect(rounds.count == 256 && steps == 14_544 && fins == 283 && rowsSeen == 153)
+        #expect(rounds.count == 258 && steps == 14_562 && fins == 285 && rowsSeen == 153)
         t.finish()
     }
 
@@ -102,6 +102,11 @@ import BallKnowledgeCore
         case "in":
             page.apply(page.round!.type(step["v"]?.s ?? "", save: &page.save))
         case "enter":
+            page.apply(page.round!.enter(save: &page.save))
+        case "in-blocked":
+            // "Give up?" hides the field on the web; the app is sent the key anyway and must ignore it.
+            page.apply(page.round!.type(step["v"]?.s ?? "", save: &page.save))
+        case "enter-blocked":
             page.apply(page.round!.enter(save: &page.save))
         case "pick":
             let via: PickSource = step["via"]?.s == "list" ? .list : .field
