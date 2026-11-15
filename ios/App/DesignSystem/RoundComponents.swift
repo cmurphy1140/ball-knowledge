@@ -13,6 +13,9 @@ struct ClockView: View {
     }
 
     let mode: Mode
+    /// The low state when the caller knows it (the core's rule: 30 seconds or less); nil turns
+    /// `bad` under 30 whole seconds.
+    var isLow: Bool? = nil
 
     var body: some View {
         switch mode {
@@ -28,7 +31,7 @@ struct ClockView: View {
                         .frame(width: BKDisplay.clock.size * (colon ? 0.26 : 0.56))
                 }
             }
-            .foregroundStyle(s < 30 ? BKColor.bad : BKColor.ink)
+            .foregroundStyle(isLow ?? (s < 30) ? BKColor.bad : BKColor.ink)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel("Time left")
             .accessibilityValue(ClockView.spoken(s))

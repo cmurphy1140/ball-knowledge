@@ -83,6 +83,15 @@ private struct NameTextField: UIViewRepresentable {
         field.clearButtonMode = .never
         field.setContentHuggingPriority(.defaultLow, for: .horizontal)
         field.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        #if DEBUG
+        // -bkQuickType: the default keyboard with predictions, to measure the QuickType fallback.
+        if ProcessInfo.processInfo.arguments.contains("-bkQuickType") {
+            field.keyboardType = .default
+            field.autocorrectionType = .yes
+            field.spellCheckingType = .yes
+            field.inlinePredictionType = .yes
+        }
+        #endif
         context.coordinator.lastSelectAll = selectAllRequest
         return field
     }
