@@ -432,6 +432,7 @@ private struct SpotAccessibility: ViewModifier {
             content
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(marker.accessibilityLabel ?? marker.position)
+                .accessibilityIdentifier("spot.\(marker.id)")
                 .accessibilitySortPriority(Double(100 - marker.id))
                 .accessibilityAddTraits(interactive ? .isButton : [])
                 .accessibilityAction { onTap?(marker.id) }

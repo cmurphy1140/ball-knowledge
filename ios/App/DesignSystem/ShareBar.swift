@@ -41,6 +41,8 @@ struct ShareBar: View {
     private var middle: some View {
         Button(middleTitle, action: middleAction)
             .lineLimit(1)
+            // "Another lineup" needs about 0.9 of its size in the 375 pt row.
+            .minimumScaleFactor(0.8)
             .buttonStyle(.bkSecondary)
     }
 
