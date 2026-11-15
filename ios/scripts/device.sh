@@ -14,7 +14,7 @@ BUNDLE_ID="com.cmurphy.ballknowledge"
 
 DEV="${1:-}"
 if [ -z "$DEV" ]; then
-  DEV="$(xcrun devicectl list devices 2>/dev/null | awk '/available \(paired\)/ && /iPhone/ { for (i = 1; i <= NF; i++) if ($i ~ /^[0-9A-F]{8}-[0-9A-F]{16}$/) { print $i; exit } }')"
+  DEV="$(xcrun devicectl list devices 2>/dev/null | awk '/(available \(paired\)|connected)/ && /iPhone/ { for (i = 1; i <= NF; i++) if ($i ~ /^[0-9A-F]{8}-[0-9A-F]{16}$/) { print $i; exit } }')"
 fi
 if [ -z "$DEV" ]; then
   echo "No paired iPhone is reachable. Unlock it on the same Wi-Fi as this Mac, or plug it in." >&2
