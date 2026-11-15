@@ -13,6 +13,9 @@ struct BallKnowledgeApp: App {
             #if DEBUG
             if FontCheck.wantsSpecimen {
                 FontSpecimenView()
+            } else if let page = GalleryPage.fromLaunchArguments {
+                // Design-system gallery: -BKGallery <page> (see Debug/Gallery.swift).
+                GalleryView(page: page)
             } else {
                 RootView()
             }
