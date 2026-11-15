@@ -19,6 +19,9 @@ final class ArtStore {
     }
 
     private let root: URL?
+    /// True makes every lookup answer nil, as if the folder were empty (launch argument
+    /// `-bkNoArt`, to check the no-art look on a build that has art).
+    var isDisabled = false
     private var images: [String: UIImage] = [:]
     private var thumbs: [String: UIImage] = [:]
     private var missing: Set<String> = []
@@ -69,6 +72,7 @@ final class ArtStore {
 
     /// Any file under LocalArt by its relative path, or nil.
     func image(at relativePath: String) -> UIImage? {
+        if isDisabled { return nil }
         if let hit = images[relativePath] { return hit }
         if missing.contains(relativePath) { return nil }
         guard let root,

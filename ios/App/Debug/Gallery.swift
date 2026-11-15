@@ -218,6 +218,9 @@ private struct TypePage: View {
 
 private struct ComponentsPage: View {
     @State private var selected = 2
+    /// The second name field: Go selects its text, as a miss does in a round.
+    @State private var nameText = "Megatron"
+    @State private var nameSelectAll = 0
 
     var body: some View {
         Section("Wordmark and bar headings") {
@@ -257,6 +260,15 @@ private struct ComponentsPage: View {
             }
             .frame(minHeight: 36)
             .padding(.horizontal, BKSpace.gutter)
+        }
+        Section("Name field") {
+            NameField(text: "", placeholder: "Name or nickname", accessibilityLabel: "Player name or nickname",
+                      wantsFocus: false, onChange: { _ in }, onGo: {})
+            NameField(text: nameText, placeholder: "Start typing a name", accessibilityLabel: "Your guess",
+                      wantsFocus: false, selectAllRequest: nameSelectAll,
+                      onChange: { nameText = $0 }, onGo: { nameSelectAll += 1 })
+            NameField(text: "", placeholder: "Start typing what it is called", accessibilityLabel: "Your guess",
+                      wantsFocus: false, onChange: { _ in }, onGo: {})
         }
         Section("Feedback lines") {
             FeedbackLine(text: "Allen Hurns, wide receiver. 4 more for Fantasy Manager.", kind: .named)

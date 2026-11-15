@@ -26,6 +26,11 @@ settings:
     SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
     SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
 
+# The game logic: a local Swift package, Foundation only, tested on its own with `swift test`.
+packages:
+  BallKnowledgeCore:
+    path: Packages/BallKnowledgeCore
+
 targets:
   BallKnowledge:
     type: application
@@ -40,6 +45,8 @@ targets:
       - path: ../data/data.json
         buildPhase: resources
         createIntermediateGroups: false
+    dependencies:
+      - package: BallKnowledgeCore
     info:
       path: App/Info.plist
       properties:
@@ -57,6 +64,9 @@ targets:
           - BigShouldersDisplay-Black.ttf
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
+        # Portrait only on iPhone, so the app opts out of multitasking sizes. Without it Xcode
+        # warns that all interface orientations must be supported.
+        UIRequiresFullScreen: true
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
     settings:
