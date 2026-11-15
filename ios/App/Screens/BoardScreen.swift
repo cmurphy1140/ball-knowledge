@@ -39,8 +39,12 @@ struct BoardScreen: View {
                     }
                 }
                 .onAppear {
-                    // Open with the selected team's row in view.
-                    proxy.scrollTo(app.selection.key.team, anchor: .center)
+                    // Open with the selected team's row in view. On iOS 18 a scroll sent from
+                    // onAppear on a tab switch lands before the grid is laid out and is lost, so
+                    // it is sent again on the next main-actor turn.
+                    let team = app.selection.key.team
+                    proxy.scrollTo(team, anchor: .center)
+                    Task { @MainActor in proxy.scrollTo(team, anchor: .center) }
                 }
             }
         }

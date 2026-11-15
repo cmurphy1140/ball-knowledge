@@ -40,6 +40,10 @@ final class BrowseTests: XCTestCase {
         // The 2019 column of the Kansas City row (13 columns, 2014 to 2026).
         let row = app.descendants(matching: .any)["board.row.KC"].firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 5), "The Kansas City row is not on screen")
+        // The Board opens with the selected row (Denver) centred, so Kansas City, the next row,
+        // is in view and not under the tab bar.
+        XCTAssertLessThan(row.frame.maxY, app.tabBars.firstMatch.frame.minY,
+                          "The Kansas City row is under the tab bar: the Board did not scroll to the selected row")
         let width = app.windows.firstMatch.frame.width
         let side = (width - 32 - 40 - 24) / 13
         let x = (16 + 40 + 5 * (side + 2) + side / 2) / width
@@ -55,6 +59,10 @@ final class BrowseTests: XCTestCase {
 
         app.buttons["board.play"].tap()
         XCTAssertTrue(app.buttons["Give up"].waitForExistence(timeout: 5), "Play did not open a round")
+        // The real round: the selected lineup, free play, field focused.
+        XCTAssertEqual(app.staticTexts["round.meta"].label, "Chiefs", "Play opened the wrong lineup")
+        XCTAssertTrue(app.staticTexts["round.title"].label.contains("2019"), "Not the 2019 season: \(app.staticTexts["round.title"].label)")
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "0 of 24 named")).firstMatch.exists)
     }
 
     @MainActor
@@ -63,6 +71,18 @@ final class BrowseTests: XCTestCase {
         app.tabBars.buttons["Lineups"].tap()
         app.buttons["lineups.play"].tap()
         XCTAssertTrue(app.buttons["Give up"].waitForExistence(timeout: 5), "Play this lineup did not open a round")
+        XCTAssertEqual(app.staticTexts["round.meta"].label, "Broncos", "Play this lineup opened the wrong lineup")
+        XCTAssertTrue(app.staticTexts["round.title"].label.contains("2016"), "Not the 2016 season: \(app.staticTexts["round.title"].label)")
+
+        // Give up, Close, then Surprise me: another real round opens.
+        app.buttons["Give up"].tap()
+        app.alerts.buttons["Show answers"].tap()
+        XCTAssertTrue(app.buttons["Close"].waitForExistence(timeout: 5))
+        app.buttons["Close"].tap()
+        XCTAssertTrue(app.buttons["lineups.surprise"].waitForExistence(timeout: 5), "Close did not return to Lineups")
+        app.buttons["lineups.surprise"].tap()
+        XCTAssertTrue(app.buttons["Give up"].waitForExistence(timeout: 5), "Surprise me did not open a round")
+        XCTAssertFalse(app.staticTexts["round.meta"].label.contains("Daily"), "Surprise me is not free play")
     }
 
     @MainActor

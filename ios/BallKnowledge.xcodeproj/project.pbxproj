@@ -40,6 +40,7 @@
 		8A307900003FAF9E390E086D /* SideGameRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51F9FE813972166F1160A833 /* SideGameRow.swift */; };
 		90016445A53F83302CDB6604 /* TeamMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A93F23320E4A668B5E1AB8 /* TeamMark.swift */; };
 		96FB751325C728845824BADB /* ScreenshotSeeds+Play.swift in Sources */ = {isa = PBXBuildFile; fileRef = 059FF2878500D24C88F7EE1B /* ScreenshotSeeds+Play.swift */; };
+		9ADBC518ABAB87DF01894F61 /* FullGameTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D89B98C87399BFFFF804996 /* FullGameTests.swift */; };
 		9EB479397EBB5E6369C38467 /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 723E7A52B8438B2C9D870A7E /* Haptics.swift */; };
 		A0ECE34EEB87DABC96DEC1FB /* ScreenshotSeeds+Quiz.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F446786FB3B864E11456EC8 /* ScreenshotSeeds+Quiz.swift */; };
 		A37F5C5BCE4BF00960692C58 /* RulesSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECDD6E015E19AEE4D1EC6CE2 /* RulesSheet.swift */; };
@@ -108,6 +109,7 @@
 		518DFE86028B6C886C3618FD /* ArtViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtViews.swift; sourceTree = "<group>"; };
 		51F9FE813972166F1160A833 /* SideGameRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SideGameRow.swift; sourceTree = "<group>"; };
 		5812882ED58678EBE5FB1B14 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		5D89B98C87399BFFFF804996 /* FullGameTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullGameTests.swift; sourceTree = "<group>"; };
 		5F446786FB3B864E11456EC8 /* ScreenshotSeeds+Quiz.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ScreenshotSeeds+Quiz.swift"; sourceTree = "<group>"; };
 		723E7A52B8438B2C9D870A7E /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
 		794E1B1CEF56E37DFC7317F2 /* Buttons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Buttons.swift; sourceTree = "<group>"; };
@@ -309,6 +311,7 @@
 			children = (
 				89F22A3535B83B236361E9B7 /* BallKnowledgeUITests.swift */,
 				391E8252C271EDD9018BFF4E /* BrowseTests.swift */,
+				5D89B98C87399BFFFF804996 /* FullGameTests.swift */,
 				3DFA7570ADCD2E08523637B9 /* PlayTests.swift */,
 				D7D0EA8242D0B8356C265E49 /* QuizTests.swift */,
 			);
@@ -501,6 +504,7 @@
 			files = (
 				0DDDF133808639C6209C2C8B /* BallKnowledgeUITests.swift in Sources */,
 				0C6E17D83D629C696FD58F51 /* BrowseTests.swift in Sources */,
+				9ADBC518ABAB87DF01894F61 /* FullGameTests.swift in Sources */,
 				0BE190933C00182D095D3D5A /* PlayTests.swift in Sources */,
 				4C5BC40872D6E2AD0DCD79BE /* QuizTests.swift in Sources */,
 			);

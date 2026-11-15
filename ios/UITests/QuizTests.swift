@@ -145,6 +145,27 @@ final class QuizTests: XCTestCase {
     private func open(_ row: String, in app: XCUIApplication) {
         app.buttons[row].tap()
         XCTAssertTrue(field(in: app).waitForExistence(timeout: 5), "\(row) did not open a live game")
+        waitUntilSettled(field(in: app), in: app)
+    }
+
+    /// Waits until the cover has finished rising and the field holds the keyboard. A key typed
+    /// while the cover is still moving can be dropped (seen once on BK SE: "Davante" arrived as
+    /// "avante").
+    @MainActor
+    private func waitUntilSettled(_ field: XCUIElement, in app: XCUIApplication) {
+        let focused = expectation(for: NSPredicate(format: "hasKeyboardFocus == true"), evaluatedWith: field)
+        _ = XCTWaiter.wait(for: [focused], timeout: 5)
+        // The software keyboard (none when the simulator has a hardware keyboard) must have
+        // finished rising too: a key sent while it slides in can be lost.
+        let keyboard = app.keyboards.firstMatch
+        _ = keyboard.waitForExistence(timeout: 2)
+        var last = (field.frame, keyboard.exists ? keyboard.frame : .zero)
+        for _ in 0..<15 {
+            Thread.sleep(forTimeInterval: 0.25)
+            let now = (field.frame, keyboard.exists ? keyboard.frame : .zero)
+            if now == last { return }
+            last = now
+        }
     }
 
     @MainActor

@@ -14,12 +14,14 @@ nonisolated final class FileSaveStore: SaveStore {
         self.url = url
     }
 
-    /// The app's own save: `Application Support/BallKnowledge/ballknowledge.v1.json`.
-    static func standard() -> FileSaveStore {
+    /// The app's own save: `Application Support/BallKnowledge/ballknowledge.v1.json`. With a
+    /// suffix, a separate file beside it (`ballknowledge.v1.test.json` for UI tests).
+    static func standard(suffix: String? = nil) -> FileSaveStore {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
         let folder = base.appendingPathComponent("BallKnowledge", isDirectory: true)
-        return FileSaveStore(url: folder.appendingPathComponent(SaveState.storageKey + ".json"))
+        let name = SaveState.storageKey + (suffix.map { "." + $0 } ?? "") + ".json"
+        return FileSaveStore(url: folder.appendingPathComponent(name))
     }
 
     /// The stored text, or nil before the first save.

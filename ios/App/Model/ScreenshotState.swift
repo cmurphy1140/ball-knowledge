@@ -10,17 +10,25 @@ import BallKnowledgeCore
 ///                       off, uses the in-memory store and seeds the state by playing the core.
 ///   -bkDate YYYY-MM-DD  pins the day (the clock still runs, from noon of that day).
 ///   -bkStore memory     the in-memory store: nothing is read from or written to disk (UI tests).
+///   -bkStore test       a file store apart from the real save (`ballknowledge.v1.test.json`), so a
+///                       UI test can kill and relaunch the app without touching the player's save.
+///   -bkFreshStore       empties the test store at launch (with `-bkStore test` only).
 ///   -bkNoArt            every art lookup answers nil, as if LocalArt were empty.
 nonisolated struct LaunchOptions: Sendable, Equatable {
     var state: ScreenshotState?
     var pinnedDay: LocalDay?
     var memoryStore = false
+    var testStore = false
+    var freshTestStore = false
     var noArt = false
 
-    init(state: ScreenshotState? = nil, pinnedDay: LocalDay? = nil, memoryStore: Bool = false, noArt: Bool = false) {
+    init(state: ScreenshotState? = nil, pinnedDay: LocalDay? = nil, memoryStore: Bool = false,
+         testStore: Bool = false, freshTestStore: Bool = false, noArt: Bool = false) {
         self.state = state
         self.pinnedDay = pinnedDay
         self.memoryStore = memoryStore
+        self.testStore = testStore
+        self.freshTestStore = freshTestStore
         self.noArt = noArt
     }
 
@@ -33,6 +41,8 @@ nonisolated struct LaunchOptions: Sendable, Equatable {
         state = value(after: "-bkState").flatMap(ScreenshotState.init(rawValue:))
         pinnedDay = value(after: "-bkDate").flatMap(LaunchOptions.day(from:))
         memoryStore = value(after: "-bkStore") == "memory"
+        testStore = value(after: "-bkStore") == "test"
+        freshTestStore = testStore && arguments.contains("-bkFreshStore")
         // A bare flag, or "-bkNoArt YES" the way UserDefaults arguments are often written.
         if arguments.contains("-bkNoArt") {
             let v = value(after: "-bkNoArt")?.lowercased()
@@ -77,7 +87,16 @@ enum AppLaunch {
         } else {
             clock = .system
         }
-        let store: any SaveStore = options.state != nil || options.memoryStore ? MemorySaveStore() : FileSaveStore.standard()
+        let store: any SaveStore
+        if options.state != nil || options.memoryStore {
+            store = MemorySaveStore()
+        } else if options.testStore {
+            let testStore = FileSaveStore.standard(suffix: "test")
+            if options.freshTestStore { try? FileManager.default.removeItem(at: testStore.url) }
+            store = testStore
+        } else {
+            store = FileSaveStore.standard()
+        }
         if options.state != nil { UIView.setAnimationsEnabled(false) }
 
         let model = AppModel(data: gameData, store: store, clock: clock, art: .shared,
