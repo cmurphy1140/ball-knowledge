@@ -15,7 +15,7 @@ import UIKit
 struct NameField: View {
     /// What the field shows; the caller updates it from `onChange`.
     let text: String
-    /// "Name or nickname, then Go", "Start typing a name", "Start typing what it is called".
+    /// "Name or nickname", "Start typing a name", "Start typing what it is called".
     let placeholder: String
     /// The VoiceOver label: "Player name or nickname", "Your guess".
     let accessibilityLabel: String

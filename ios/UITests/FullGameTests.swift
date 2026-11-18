@@ -87,7 +87,7 @@ final class FullGameTests: XCTestCase {
 
         for (n, name) in dailyNames.enumerated() {
             field.typeText(name)
-            if let left = field.value as? String, !left.isEmpty, left != "Name or nickname, then Go" {
+            if let left = field.value as? String, !left.isEmpty, left != "Name or nickname" {
                 field.typeText("\n")
             }
             assertNamed(n + 1, app)
@@ -166,7 +166,7 @@ final class FullGameTests: XCTestCase {
         let clockBefore = element("round.clock", in: app).label
         for (n, name) in dolphins.enumerated() {
             field.typeText(name)
-            if let left = field.value as? String, !left.isEmpty, left != "Name or nickname, then Go" {
+            if let left = field.value as? String, !left.isEmpty, left != "Name or nickname" {
                 field.typeText("\n")
             }
             assertNamed(n + 1, app)
@@ -208,7 +208,7 @@ final class FullGameTests: XCTestCase {
 
     @MainActor
     private func nameField(_ app: XCUIApplication) -> XCUIElement {
-        app.textFields.matching(NSPredicate(format: "placeholderValue == %@", "Name or nickname, then Go")).firstMatch
+        app.textFields.matching(NSPredicate(format: "placeholderValue == %@", "Name or nickname")).firstMatch
     }
 
     @MainActor

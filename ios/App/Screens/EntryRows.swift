@@ -15,7 +15,7 @@ struct EntryRows: View {
                      count: round.countText, accessibilityCount: round.spokenCount)
                 .accessibilityIdentifier("round.count")
             FeedbackRow(model: model)
-            NameField(text: round.input, placeholder: "Name or nickname, then Go",
+            NameField(text: round.input, placeholder: "Name or nickname",
                       accessibilityLabel: "Player name or nickname",
                       wantsFocus: model.isLive, selectAllRequest: model.selectAllRequest,
                       onChange: { model.type($0) }, onGo: { model.go() })
@@ -34,9 +34,15 @@ private struct FeedbackRow: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: BKSpace.s8) {
-            FeedbackLine(text: model.round.feedback.text, kind: model.feedbackKind)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .accessibilityIdentifier("round.feedback")
+            if let hint = model.goHint {
+                FeedbackLine(text: hint, kind: .hint)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .accessibilityIdentifier("round.hint")
+            } else {
+                FeedbackLine(text: model.round.feedback.text, kind: model.feedbackKind)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .accessibilityIdentifier("round.feedback")
+            }
             if model.round.showsClueButton {
                 ClueButton { model.takeClue() }
                     .accessibilityIdentifier("round.clue")

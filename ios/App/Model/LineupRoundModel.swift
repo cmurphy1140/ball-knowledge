@@ -105,6 +105,18 @@ final class LineupRoundModel {
     /// True when the clock is in its last 30 seconds (the core's rule).
     var clockIsLow: Bool { round.clock.isLow }
 
+    /// True from a keystroke that took no name until the next action (Go, a tap, a clue): the
+    /// player is mid-word and the feedback line has nothing new to say.
+    private var typedWithoutMatch = false
+
+    /// The one-line nudge under the entry row: while the round is live and the field has text that
+    /// has not filled a spot, the keyboard's Go key (drawn as an arrow) is the way to check a
+    /// nickname or a near miss. Nil otherwise; Go, taps and clues bring their own feedback back.
+    var goHint: String? {
+        guard isLive, typedWithoutMatch, !round.input.trimmingCharacters(in: .whitespaces).isEmpty else { return nil }
+        return "Tap \u{2192} to check nicknames and near misses"
+    }
+
     /// The feedback line's kind for the design system.
     var feedbackKind: FeedbackLine.Kind {
         switch round.feedback.kind {
@@ -120,12 +132,15 @@ final class LineupRoundModel {
     /// One keystroke, paste or deletion in the name field.
     func type(_ text: String) {
         guard isLive else { return }
-        apply(app.run(&round) { $0.type(text, save: &$1) })
+        let change = app.run(&round) { $0.type(text, save: &$1) }
+        typedWithoutMatch = change.named.isEmpty
+        apply(change)
     }
 
     /// The Go key: a short nickname or a near miss is taken; nobody found selects the text.
     func go() {
         guard isLive else { return }
+        typedWithoutMatch = false
         apply(app.run(&round) { $0.enter(save: &$1) })
     }
 
@@ -133,6 +148,7 @@ final class LineupRoundModel {
 
     /// A tap on the field: a spot (nearest within reach) or open turf (nil).
     func tapField(_ slot: Int?) {
+        typedWithoutMatch = false
         if let slot {
             apply(app.run(&round) { r, _ in r.pick(slot, from: .field) })
         } else if isLive {
@@ -142,6 +158,7 @@ final class LineupRoundModel {
 
     /// A tap on a List row (only open rows respond, while live).
     func tapRow(_ slot: Int) {
+        typedWithoutMatch = false
         let before = round.selection
         apply(app.run(&round) { r, _ in r.pick(slot, from: .list) })
         if round.selection != before { BKHaptic.play(.selectionChanged) }
@@ -149,6 +166,7 @@ final class LineupRoundModel {
 
     /// "Show clue, half credit" for the selected spot.
     func takeClue() {
+        typedWithoutMatch = false
         apply(app.run(&round) { $0.takeClue(save: &$1) })
     }
 
