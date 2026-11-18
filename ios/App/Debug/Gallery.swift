@@ -262,7 +262,7 @@ private struct ComponentsPage: View {
             .padding(.horizontal, BKSpace.gutter)
         }
         Section("Name field") {
-            NameField(text: "", placeholder: "Name or nickname", accessibilityLabel: "Player name or nickname",
+            NameField(text: "", placeholder: "Name or nickname, then Go", accessibilityLabel: "Player name or nickname",
                       wantsFocus: false, onChange: { _ in }, onGo: {})
             NameField(text: nameText, placeholder: "Start typing a name", accessibilityLabel: "Your guess",
                       wantsFocus: false, selectAllRequest: nameSelectAll,

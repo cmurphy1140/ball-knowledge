@@ -277,7 +277,7 @@ A canvas that fills whatever frame it is given with `turf`. The 360 x 210 u play
 A strip of `turf`, 9 high, with `chalk` ticks at 0.42 every 10% (1 pt). Ground gained is `chalk` at 0.2 from the left edge to the current share of credit. Two markers, 3 x 15, radius 1, overhanging the strip by 3 above and below: blue (`fieldLos`) at the current share, yellow (`fieldGain`) at the next rank's threshold, hidden when there is no next rank. The count sits to its right.
 
 ### Name field
-44 high, radius 10, `surface` fill, 2 pt `los` outline while focused (1 pt `line2` otherwise), 14 inner padding, text in `body`, placeholder in `ink3`: "Name or nickname" (lineup), "Start typing a name" (Journeyman, Box Score), "Start typing what it is called" (Name That Game). Words capitalized, autocorrection off, spell checking off, ASCII keyboard, Go key.
+44 high, radius 10, `surface` fill, 2 pt `los` outline while focused (1 pt `line2` otherwise), 14 inner padding, text in `body`, placeholder in `ink3`: "Name or nickname, then Go" (lineup), "Start typing a name" (Journeyman, Box Score), "Start typing what it is called" (Name That Game). Words capitalized, autocorrection off, spell checking off, ASCII keyboard, Go key.
 
 ### Clue button
 Bordered, small (32 high, hit area 44, 156 wide), label "Show clue, half credit" in `footnote` semibold, `gainInk`, no glyph. The feedback text beside it gets 343 - 156 - 8 = 179 at 375 and wraps to its second line.

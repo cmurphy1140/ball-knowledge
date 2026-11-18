@@ -5,7 +5,8 @@ import UIKit
 /// 44 high (grows with Dynamic Type), radius 10, `surface` fill, a 2 pt `los` outline while
 /// focused and 1 pt `line2` otherwise, 14 inner padding, text in `body`, placeholder in `ink3`.
 /// Words capitalized, autocorrection and spell checking off, ASCII keyboard (which keeps the
-/// QuickType bar away), and a Go key that never drops the keyboard.
+/// QuickType bar away), and a Go key that never drops the keyboard and reads dim while the
+/// field is empty (the system greys it out; it is full weight once there is text to check).
 ///
 /// The text belongs to the caller (the core's `input`): every keystroke, paste or deletion is
 /// reported through `onChange`, and whatever `text` says is shown, so when the core takes a name
@@ -14,7 +15,7 @@ import UIKit
 struct NameField: View {
     /// What the field shows; the caller updates it from `onChange`.
     let text: String
-    /// "Name or nickname", "Start typing a name", "Start typing what it is called".
+    /// "Name or nickname, then Go", "Start typing a name", "Start typing what it is called".
     let placeholder: String
     /// The VoiceOver label: "Player name or nickname", "Your guess".
     let accessibilityLabel: String
@@ -79,7 +80,7 @@ private struct NameTextField: UIViewRepresentable {
         field.smartInsertDeleteType = .no
         field.inlinePredictionType = .no
         field.returnKeyType = .go
-        field.enablesReturnKeyAutomatically = false
+        field.enablesReturnKeyAutomatically = true
         field.clearButtonMode = .never
         field.setContentHuggingPriority(.defaultLow, for: .horizontal)
         field.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)

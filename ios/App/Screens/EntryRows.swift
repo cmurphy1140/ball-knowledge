@@ -15,7 +15,7 @@ struct EntryRows: View {
                      count: round.countText, accessibilityCount: round.spokenCount)
                 .accessibilityIdentifier("round.count")
             FeedbackRow(model: model)
-            NameField(text: round.input, placeholder: "Name or nickname",
+            NameField(text: round.input, placeholder: "Name or nickname, then Go",
                       accessibilityLabel: "Player name or nickname",
                       wantsFocus: model.isLive, selectAllRequest: model.selectAllRequest,
                       onChange: { model.type($0) }, onGo: { model.go() })

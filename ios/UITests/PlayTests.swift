@@ -11,7 +11,7 @@ final class PlayTests: XCTestCase {
     /// The name field, found by its placeholder (its value changes as names are taken).
     @MainActor
     private func nameField(_ app: XCUIApplication) -> XCUIElement {
-        app.textFields.matching(NSPredicate(format: "placeholderValue == %@", "Name or nickname")).firstMatch
+        app.textFields.matching(NSPredicate(format: "placeholderValue == %@", "Name or nickname, then Go")).firstMatch
     }
 
     @MainActor
@@ -48,7 +48,7 @@ final class PlayTests: XCTestCase {
         assertCount("1 of 24 named. 4 more for Fantasy Manager", app)
         XCTAssertEqual(feedback(app), "\u{2713} Blake Bortles, QB \u{B7} 4 more for Fantasy Manager")
         // An empty field reads "" (or its placeholder on some systems).
-        XCTAssertTrue(["", "Name or nickname"].contains(field.value as? String ?? ""), "The field did not clear after a match")
+        XCTAssertTrue(["", "Name or nickname, then Go"].contains(field.value as? String ?? ""), "The field did not clear after a match")
 
         field.typeText("Allen Hurns")
         assertCount("2 of 24 named. 3 more for Fantasy Manager", app)
